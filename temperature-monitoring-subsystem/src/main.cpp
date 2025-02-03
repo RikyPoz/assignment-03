@@ -1,132 +1,201 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include "Led.h"
 #include <Termo.h>
 #define MSG_BUFFER_SIZE 50
 #define TERMO_PIN 5
-#define REDLED_PIN 5
-#define GREENLED_PIN 5
+#define REDLED_PIN 9
+#define GREENLED_PIN 10
 
-/* wifi network info */
+#define IDLE 2
+#define START_STATE 1
+// wifi network info
 
-const char *ssid = "LittleBarfly";
-const char *password = "esiot-2024-2025";
+const char *ssid = "Home&Life SuperWiFi-42A5";
+const char *password = "GKK3PJNLHJ8FHHFX";
 
-/* MQTT server address */
+// MQTT server address 
 const char *mqtt_server = "broker.mqtt-dashboard.com";
 
-/* MQTT topic */
-const char *topic = "esiot-2024";
+// MQTT topic 
+const char *topic = "temperatura";
 
-/* MQTT client management */
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-
-unsigned long lastMsgTime = 0;
+TaskHandle_t termoTask;
+TaskHandle_t wifiTask;
+TaskHandle_t sendTask;
+TaskHandle_t mqttTask;
+volatile TickType_t sendPeriod;
+volatile int temperature;
+volatile int state;
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
+// MQTT subscribing callback
 
-TaskHandle_t TermoTask;
+void callback(char *topic, byte *payload, unsigned int length) {
+  char buffer[MSG_BUFFER_SIZE];
+  unsigned int copyLen = (length < (MSG_BUFFER_SIZE - 1)) ? length : (MSG_BUFFER_SIZE - 1);
+  memcpy(buffer, payload, copyLen);
+  buffer[copyLen] = '\0';
 
-void setup_wifi()
-{
-  delay(10);
-  Serial.println(String("Connecting to ") + ssid);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
+  StaticJsonDocument<128> doc;
+  DeserializationError error = deserializeJson(doc, buffer);
+  if (error) {
+    Serial.print("Errore nel parsing del JSON: ");
+    Serial.println(error.f_str());
+    return;
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
-
-/* MQTT subscribing callback */
-
-void callback(char *topic, byte *payload, unsigned int length)
-{
-  Serial.println(String("Message arrived on [") + topic + "] len: " + length);
-}
-
-void reconnect()
-{
-
-  // Loop until we're reconnected
-
-  while (!client.connected())
-  {
-    Serial.print("Attempting MQTT connection...");
-
-    // Create a random client ID
-    String clientId = String("esiot-2023-client-") + String(random(0xffff), HEX);
-
-    // Attempt to connect
-    if (client.connect(clientId.c_str()))
-    {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      // client.publish("outTopic", "hello world");
-      // ... and resubscribe
-      client.subscribe(topic);
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
+  if (doc.containsKey("sendPeriod")) {
+    long period_ms = doc["sendPeriod"];
+    sendPeriod = pdMS_TO_TICKS(period_ms);
+    Serial.print("sendPeriod aggiornato a: ");
+    Serial.print(period_ms);
   }
 }
 
-void TermoTaskcode(void *parameter)
+void sendTaskcode(void *parameter)
 {
-  Termo termo(TERMO_PIN);
-  Serial.print("TermoTask is running on core ");
+  Led redLed(REDLED_PIN);
+  Led greenLed(GREENLED_PIN);
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  bool connected = false;
+  const TickType_t retryPeriod = pdMS_TO_TICKS(5000);
+
+  Serial.print("sendTask is running on core ");
   Serial.println(xPortGetCoreID());
+  for (;;) {
+    if (connected) {
+      if (state == IDLE) {
+        Serial.print("Periodo: ");
+        Serial.println(sendPeriod);
+        xTaskDelayUntil( &xLastWakeTime, sendPeriod);
+        snprintf(msg, MSG_BUFFER_SIZE, "{\"temperatura\":%d}", temperature);
+        Serial.println(String("Publishing message: ") + msg);
+        client.publish(topic, msg);
+      } else {
+        greenLed.switchOff();
+        redLed.switchOn();
+        connected = false;
+      }
+    } else {
+      if (state == IDLE) {
+        redLed.switchOff();
+        greenLed.switchOn();
+        connected = true;
+      } else {
+        xTaskDelayUntil( &xLastWakeTime, retryPeriod);
+      }
+    }
+    
+  }
+}
 
-  for (;;)
-  {
-    Serial.print("Value:" + termo.detectValue());
-    vTaskDelay(pdMS_TO_TICKS(3000));
+
+void mqttTaskcode(void *parameter) {
+  bool connected = false;
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t loopPeriod = pdMS_TO_TICKS(100);
+  const TickType_t retryPeriod = pdMS_TO_TICKS(5000);
+
+  for (;;) {
+    if (connected) {
+      if (client.connected()) {
+        client.loop();
+        xTaskDelayUntil(&xLastWakeTime, loopPeriod);
+      } else {
+        state--;
+        connected = false;
+      }
+    } else {
+      Serial.print("Attempting MQTT connection...");
+      // Create a random client ID
+      String clientId = String("temp-client") + String(random(0xffff), HEX);
+      // Attempt to connect
+      if (client.connect(clientId.c_str())) {
+        Serial.println("connected");
+        client.subscribe(topic);
+        state++;
+        connected = true;
+      } else {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" try again in 5 seconds");
+        xTaskDelayUntil(&xLastWakeTime, retryPeriod);
+      }
+    }
+  }
+  
+}
+
+void wifiTaskcode(void *parameter) {
+  bool connected = true;
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t loopPeriod = pdMS_TO_TICKS(100);
+  const TickType_t retryPeriod = pdMS_TO_TICKS(500);
+  for (;;) {
+    if (connected) {
+      if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi Disconnected... Reconnect.");
+        WiFi.begin(ssid, password);
+        Serial.print("Connecting");
+        state--;
+        connected = false;
+      } else {
+        xTaskDelayUntil(&xLastWakeTime, loopPeriod);
+      }
+    } else {
+      if (WiFi.status() != WL_CONNECTED) {
+        Serial.print(" .");
+        xTaskDelayUntil(&xLastWakeTime, retryPeriod);
+      } else {
+        Serial.println("");
+        Serial.print("Connected to WiFi network with IP Address: ");
+        Serial.println(WiFi.localIP());
+        state++;
+        connected = true;
+      }
+    }
+  }
+}
+
+int simulaTemperatura(void) {
+  static int t = 20, d = 1;
+  t += d;
+  if(t >= 25) d = -1;
+  else if(t <= 15) d = 1;
+  return t;
+}
+
+void termoTaskcode(void *parameter) {
+  Termo termo(TERMO_PIN);
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t period = pdMS_TO_TICKS(100);
+  for (;;) {
+    temperature = simulaTemperatura();
+    xTaskDelayUntil(&xLastWakeTime, period);
   }
 }
 
 void setup()
 {
   Serial.begin(115200);
-  /*setup_wifi();
+  WiFi.mode(WIFI_STA);
   randomSeed(micros());
   client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);*/
-  xTaskCreatePinnedToCore(TermoTaskcode, "TermoTask", 10000, NULL, 1, &TermoTask, 0);
+  client.setCallback(callback);
+  sendPeriod = pdMS_TO_TICKS(3000);
+  state = START_STATE;
+  xTaskCreatePinnedToCore(termoTaskcode, "termo", 2048, NULL, 1, &termoTask, 0);
+  xTaskCreatePinnedToCore(wifiTaskcode, "wifi", 4096, NULL, 1, &wifiTask, 1);
+  xTaskCreatePinnedToCore(mqttTaskcode, "mqtt", 4096, NULL, 1, &mqttTask, 1);
+  xTaskCreatePinnedToCore(sendTaskcode, "send", 4096, NULL, 1, &sendTask, 1);
 }
 
 void loop()
 {
 
-  /*if (!client.connected())
-  {
-    reconnect();
-  }
-  client.loop();
-
-  unsigned long now = millis();
-  if (now - lastMsgTime > 10000)
-  {
-    lastMsgTime = now;
-    value++;
-
-    snprintf(msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
-
-    Serial.println(String("Publishing message: ") + msg);
-
-    client.publish(topic, msg);
-  }*/
 }

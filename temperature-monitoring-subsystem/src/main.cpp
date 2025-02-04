@@ -7,14 +7,12 @@
 #define MSG_BUFFER_SIZE 50
 #define TERMO_PIN 5
 #define REDLED_PIN 9
-#define GREENLED_PIN 10
+#define GREENLED_PIN 8
 
-#define IDLE 2
-#define START_STATE 1
 // wifi network info
 
 const char *ssid = "Home&Life SuperWiFi-42A5";
-const char *password = "GKK3PJNLHJ8FHHFX";
+const char *password = "*****";
 
 // MQTT server address 
 const char *mqtt_server = "broker.mqtt-dashboard.com";
@@ -22,19 +20,14 @@ const char *mqtt_server = "broker.mqtt-dashboard.com";
 // MQTT topic 
 const char *topic = "temperatura";
 
-
-
 WiFiClient espClient;
 PubSubClient client(espClient);
-TaskHandle_t termoTask;
-TaskHandle_t wifiTask;
-TaskHandle_t sendTask;
-TaskHandle_t mqttTask;
+TaskHandle_t termoTask, wifiTask, sendTask, mqttTask;
 volatile TickType_t sendPeriod;
 volatile int temperature;
-volatile int state;
+bool wifiConn, mqttConn;
 char msg[MSG_BUFFER_SIZE];
-// MQTT subscribing callback
+
 
 void callback(char *topic, byte *payload, unsigned int length) {
   char buffer[MSG_BUFFER_SIZE];
@@ -69,7 +62,7 @@ void sendTaskcode(void *parameter)
   Serial.println(xPortGetCoreID());
   for (;;) {
     if (connected) {
-      if (state == IDLE) {
+      if (wifiConn && mqttConn) {
         Serial.print("Periodo: ");
         Serial.println(sendPeriod);
         xTaskDelayUntil( &xLastWakeTime, sendPeriod);
@@ -82,7 +75,7 @@ void sendTaskcode(void *parameter)
         connected = false;
       }
     } else {
-      if (state == IDLE) {
+      if (wifiConn && mqttConn) {
         redLed.switchOff();
         greenLed.switchOn();
         connected = true;
@@ -96,19 +89,17 @@ void sendTaskcode(void *parameter)
 
 
 void mqttTaskcode(void *parameter) {
-  bool connected = false;
   TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t loopPeriod = pdMS_TO_TICKS(100);
   const TickType_t retryPeriod = pdMS_TO_TICKS(5000);
 
   for (;;) {
-    if (connected) {
+    if (mqttConn) {
       if (client.connected()) {
         client.loop();
         xTaskDelayUntil(&xLastWakeTime, loopPeriod);
       } else {
-        state--;
-        connected = false;
+        mqttConn = false;
       }
     } else {
       Serial.print("Attempting MQTT connection...");
@@ -118,8 +109,7 @@ void mqttTaskcode(void *parameter) {
       if (client.connect(clientId.c_str())) {
         Serial.println("connected");
         client.subscribe(topic);
-        state++;
-        connected = true;
+        mqttConn = true;
       } else {
         Serial.print("failed, rc=");
         Serial.print(client.state());
@@ -132,18 +122,16 @@ void mqttTaskcode(void *parameter) {
 }
 
 void wifiTaskcode(void *parameter) {
-  bool connected = true;
   TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t loopPeriod = pdMS_TO_TICKS(100);
   const TickType_t retryPeriod = pdMS_TO_TICKS(500);
   for (;;) {
-    if (connected) {
+    if (wifiConn) {
       if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi Disconnected... Reconnect.");
         WiFi.begin(ssid, password);
         Serial.print("Connecting");
-        state--;
-        connected = false;
+        wifiConn = false;
       } else {
         xTaskDelayUntil(&xLastWakeTime, loopPeriod);
       }
@@ -155,8 +143,7 @@ void wifiTaskcode(void *parameter) {
         Serial.println("");
         Serial.print("Connected to WiFi network with IP Address: ");
         Serial.println(WiFi.localIP());
-        state++;
-        connected = true;
+        wifiConn = true;
       }
     }
   }
@@ -188,14 +175,12 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   sendPeriod = pdMS_TO_TICKS(3000);
-  state = START_STATE;
+  wifiConn = true;
+  mqttConn = false;
   xTaskCreatePinnedToCore(termoTaskcode, "termo", 2048, NULL, 1, &termoTask, 0);
   xTaskCreatePinnedToCore(wifiTaskcode, "wifi", 4096, NULL, 1, &wifiTask, 1);
   xTaskCreatePinnedToCore(mqttTaskcode, "mqtt", 4096, NULL, 1, &mqttTask, 1);
   xTaskCreatePinnedToCore(sendTaskcode, "send", 4096, NULL, 1, &sendTask, 1);
 }
 
-void loop()
-{
-
-}
+void loop() {}

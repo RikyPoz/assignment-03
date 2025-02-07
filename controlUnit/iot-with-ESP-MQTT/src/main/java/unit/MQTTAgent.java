@@ -1,4 +1,4 @@
-package main.java;
+package unit;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
@@ -9,7 +9,7 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 public class MQTTAgent extends AbstractVerticle {
 
     private static final String MQTT_BROKER = "broker.mqtt-dashboard.com";
-    private static final String TOPIC_TEMPERATURE = "temperature/data"; // ESP32 → Control Unit
+    private static final String TOPIC_TEMPERATURE = "temperatura"; // ESP32 → Control Unit
     private static final String TOPIC_FREQUENCY = "temperature/frequency"; // Control Unit → ESP32
 
     private static final double T1 = 25.0; // Soglia HOT
@@ -27,14 +27,17 @@ public class MQTTAgent extends AbstractVerticle {
             if (conn.succeeded()) {
                 System.out.println("[MQTT] Connesso al broker");
 
-                client.subscribe(TOPIC_TEMPERATURE, MqttQoS.AT_LEAST_ONCE);
+                client.subscribe(TOPIC_TEMPERATURE, 2);
                 client.publishHandler(message -> {
                     JsonObject json = new JsonObject(message.payload().toString());
-                    double temperature = json.getDouble("temperature");
+                    double temperature = 0;
+                    if (json.containsKey("temperatura")) {
+                        temperature = json.getInteger("temperatura");
+                    }
 
                     System.out.println("[MQTT] Temperatura ricevuta: " + temperature);
 
-                    determineSystemState(temperature);
+                    DataStore.determineSystemState(temperature);
                 });
 
             } else {
@@ -43,25 +46,9 @@ public class MQTTAgent extends AbstractVerticle {
         });
     }
 
-    // determina lo stato e salva i dati nel DataStore
-    private void determineSystemState(double temperature) {
-        String state;
-        int frequency;
+    public void addObserver(Observable obs) {
+        this.osberver = obs;
 
-        if (temperature < T1) {
-            state = "NORMAL";
-            frequency = F1;
-        } else if (temperature <= T2) {
-            state = "HOT";
-            frequency = F2;
-        } else {
-            state = "TOO_HOT";
-            frequency = F2;
-        }
-
-        System.out.println("[MQTT] Stato del sistema: " + state);
-        DataStore.saveTemperatureData(temperature, state, frequency);
-        sendUpdateFrequency(frequency);
     }
 
     // Invia la frequenza di aggiornamento

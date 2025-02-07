@@ -1,4 +1,6 @@
-package main.java;
+package unit;
+
+import java.io.Serial;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -8,16 +10,23 @@ public class Main extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) {
+
+        HttpServer httpServer = new HttpServer();
+        MQTTAgent mqttAgent = new MQTTAgent();
+        SerialService serialService = new SerialService();
+        DataStore centralUnit = new DataStore(httpServer, mqttAgent, serialService);
+
         // Avvia il server HTTP per la Dashboard
-        vertx.deployVerticle(new HttpServer());
+        vertx.deployVerticle(httpServer);
 
         // Avvia il servizio MQTT per ESP
-        vertx.deployVerticle(new MQTTAgent());
+        vertx.deployVerticle(mqttAgent);
 
         // Avvia il servizio seriale per la comunicazione con Arduino
-        vertx.deployVerticle(new SerialService());
+        // vertx.deployVerticle(serialService);
 
         startPromise.complete();
+
     }
 
     public static void main(String[] args) {

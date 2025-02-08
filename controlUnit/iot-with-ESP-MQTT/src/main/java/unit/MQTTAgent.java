@@ -4,6 +4,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttClient;
+
+import java.util.Observable;
+
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 public class MQTTAgent extends AbstractVerticle {
@@ -11,7 +14,6 @@ public class MQTTAgent extends AbstractVerticle {
     private static final String MQTT_BROKER = "broker.mqtt-dashboard.com";
     private static final String TOPIC_TEMPERATURE = "temperatura"; // ESP32 → Control Unit
     private static final String TOPIC_FREQUENCY = "temperature/frequency"; // Control Unit → ESP32
-
     private static final double T1 = 25.0; // Soglia HOT
     private static final double T2 = 30.0; // Soglia TOO_HOT
     private static final int F1 = 10; // Frequenza in NORMAL state (secondi)
@@ -37,18 +39,13 @@ public class MQTTAgent extends AbstractVerticle {
 
                     System.out.println("[MQTT] Temperatura ricevuta: " + temperature);
 
-                    DataStore.determineSystemState(temperature);
+                    determineSystemState(temperature);
                 });
 
             } else {
                 System.out.println("[MQTT] Connessione fallita!");
             }
         });
-    }
-
-    public void addObserver(Observable obs) {
-        this.osberver = obs;
-
     }
 
     // Invia la frequenza di aggiornamento
@@ -60,5 +57,25 @@ public class MQTTAgent extends AbstractVerticle {
                 false,
                 false);
         System.out.println("[MQTT] Frequenza inviata: " + frequency + "s");
+    }
+
+    private void determineSystemState(double temperature) {
+        String mode;
+        int frequency;
+
+        if (temperature < T1) {
+            mode = "NORMAL";
+            frequency = F1;
+        } else if (temperature <= T2) {
+            mode = "HOT";
+            frequency = F2;
+        } else {
+            mode = "TOO_HOT";
+            frequency = F2;
+        }
+
+        sendUpdateFrequency(frequency);
+        DataStore.saveTemperatureData(temperature, mode, frequency);
+
     }
 }

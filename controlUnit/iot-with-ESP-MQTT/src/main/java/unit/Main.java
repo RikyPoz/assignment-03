@@ -11,10 +11,11 @@ public class Main extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
 
-        HttpServer httpServer = new HttpServer();
-        MQTTAgent mqttAgent = new MQTTAgent();
-        SerialService serialService = new SerialService();
-        DataStore centralUnit = new DataStore(httpServer, mqttAgent, serialService);
+        DataStore dataStore = new DataStore();
+        ControlUnit controlUnit = new ControlUnit(dataStore);
+        HttpServer httpServer = new HttpServer(controlUnit);
+        MQTTAgent mqttAgent = new MQTTAgent(controlUnit);
+        SerialService serialService = new SerialService(controlUnit);
 
         // Avvia il server HTTP per la Dashboard
         vertx.deployVerticle(httpServer);

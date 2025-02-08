@@ -27,11 +27,8 @@ public class HttpServer extends AbstractVerticle {
 
         router.get("/status").handler(this::handleGetSystemStatus);
         router.get("/latestNtemperature").handler(this::getLatestNtemperature);
-        router.post("/mode/manual").handler(this::handleManualMode);
-        router.post("/mode/automatic").handler(this::handleManualMode);
-
-        router.post("/window").handler(this::handleWindowControl);
-
+        router.post("/mode").handler(this::handleSetMode);
+        router.post("/window").handler(this::handleWindowPosition);
         router.post("/reset-alarm").handler(this::handleResetAlarm);
 
         // Avvio del server HTTP
@@ -68,25 +65,20 @@ public class HttpServer extends AbstractVerticle {
                 .end(latestNtemperature.encode());
     }
 
-    private void handleManualMode(RoutingContext context) {
-        /*
-         * DataStore.setMode("manual");
-         * 
-         * context.response()
-         * .setStatusCode(200)
-         * .end(new JsonObject().put("message", "Modalità manuale attivata").encode());
-         */
+    private void handleSetMode(RoutingContext context) {
+        JsonObject body = context.getBodyAsJson();
+        String newMode = body.getString("mode");
+
+        controlUnit.setMode(newMode);
+        context.response().end(new JsonObject().put("status", "Mode changed").encode());
     }
 
-    private void handleWindowControl(RoutingContext context) {
-        /*
-         * String openValue = context.request().getParam("open");
-         * DataStore.setWindowState(openValue);
-         * 
-         * context.response()
-         * .setStatusCode(200)
-         * .end(new JsonObject().put("message", "Finestra controllata").encode());
-         */
+    private void handleWindowPosition(RoutingContext context) {
+        JsonObject body = context.getBodyAsJson();
+        double position = body.getDouble("position");
+
+        controlUnit.setWindowPosition(position);
+        context.response().end(new JsonObject().put("status", "Window position updated").encode());
     }
 
     private void handleResetAlarm(RoutingContext context) {

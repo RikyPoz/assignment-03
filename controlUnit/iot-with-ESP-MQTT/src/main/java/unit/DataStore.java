@@ -7,15 +7,12 @@ import java.util.LinkedList;
 
 public class DataStore {
 
-    private static final LinkedList<JsonObject> dataStore = new LinkedList<>();
+    private final LinkedList<JsonObject> dataStore = new LinkedList<>();
 
     // Salva i dati della temperatura
-    public static void saveTemperatureData(double temperature, String state, int frequency) {
+    public void saveTemperatureData(double temperature) {
         JsonObject dataObj = new JsonObject()
                 .put("temperature", temperature)
-                .put("state", state)
-                .put("frequency", frequency)
-                .put("windowPosition", 0.0) // Default
                 .put("timestamp", System.currentTimeMillis());
 
         dataStore.addFirst(dataObj);
@@ -27,15 +24,15 @@ public class DataStore {
     }
 
     // Recupera l'ultimo dato salvato
-    public static JsonObject getLatestData() {
+    public JsonObject getLatestData(String state, int windowPosition) {
         if (dataStore.isEmpty()) {
             return new JsonObject().put("message", "No data available");
         }
-        return dataStore.getFirst();
+        return dataStore.getFirst().put("state", state).put("windowPosition", windowPosition);
     }
 
     // Recupera le ultime N temperature
-    public static JsonObject getLatestNtemperature(int N) {
+    public JsonObject getLatestNtemperature(int N) {
         if (dataStore.isEmpty()) {
             return new JsonObject().put("message", "No data available");
         }

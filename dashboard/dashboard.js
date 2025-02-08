@@ -32,29 +32,41 @@ async function getLast_N_Temperature() {
 // Funzione per cambiare modalità
 document.getElementById("modeBtn").addEventListener("click", async () => {
     let text = document.getElementById("modeBtn").textContent;
+    let m;
     if (text == "Attiva modalità MANUALE") {
-
+        m = "MANUAL"
         document.getElementById("modeBtn").textContent = "Attiva modalità AUTOMATICA";
         document.getElementById("windowSlider").style.display = "inline";
-        await fetch(`${API_URL}/mode/automatic`, { method: "POST" });
     } else if (text == "Attiva modalità AUTOMATICA") {
-
+        m = "AUTOMATIC"
         document.getElementById("modeBtn").textContent = "Attiva modalità MANUALE";
         document.getElementById("windowSlider").style.display = "none";
-        await fetch(`${API_URL}/mode/manual`, { method: "POST" });
     }
-
+    await fetch(`${API_URL}/mode`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mode: m })
+      });
 });
 
 // Controllo finestra manuale
 document.getElementById("windowSlider").addEventListener("input", async (event) => {
-    let value = event.target.value;
-    await fetch(`${API_URL}/window?open=${value}`, { method: "POST" });
+    let value = parseInt(event.target.value);
+
+    await fetch(`${API_URL}/window`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ position: value })
+      });
 });
 
 // Reset allarme
 document.getElementById("resetAlarmBtn").addEventListener("click", async () => {
-    await fetch(`${API_URL}/reset-alarm`, { method: "POST" });
+    await fetch(`${API_URL}/reset-alarm`);
     alert("Allarme resettato");
 });
 

@@ -1,11 +1,14 @@
 package unit;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 
-public class SerialService extends AbstractVerticle {
+public class SerialService extends VerticleService {
 
     private MsgService msgService;
+
+    public SerialService(ControlUnit controlUnit) {
+        super(controlUnit);
+    }
 
     @Override
     public void start(Promise<Void> startPromise) {

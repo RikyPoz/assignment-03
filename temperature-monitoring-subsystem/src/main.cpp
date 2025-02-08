@@ -12,13 +12,15 @@
 // wifi network info
 
 const char *ssid = "Home&Life SuperWiFi-42A5";
-const char *password = "*****";
+const char *password = "GKK3PJNLHJ8FHHFX";
 
 // MQTT server address 
 const char *mqtt_server = "broker.mqtt-dashboard.com";
 
 // MQTT topic 
-const char *topic = "temperatura";
+const char *topic1 = "temperatura";
+const char *topic2 = "periodo";
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -42,8 +44,8 @@ void callback(char *topic, byte *payload, unsigned int length) {
     Serial.println(error.f_str());
     return;
   }
-  if (doc.containsKey("sendPeriod")) {
-    long period_ms = doc["sendPeriod"];
+  if (((String) topic).equals(topic2) && doc.containsKey("period")) {
+    long period_ms = doc["period"];
     sendPeriod = pdMS_TO_TICKS(period_ms);
     Serial.print("sendPeriod aggiornato a: ");
     Serial.print(period_ms);
@@ -65,10 +67,10 @@ void sendTaskcode(void *parameter)
       if (wifiConn && mqttConn) {
         Serial.print("Periodo: ");
         Serial.println(sendPeriod);
-        xTaskDelayUntil( &xLastWakeTime, sendPeriod);
         snprintf(msg, MSG_BUFFER_SIZE, "{\"temperatura\":%d}", temperature);
         Serial.println(String("Publishing message: ") + msg);
-        client.publish(topic, msg);
+        client.publish(topic1, msg);
+        xTaskDelayUntil( &xLastWakeTime, sendPeriod);
       } else {
         greenLed.switchOff();
         redLed.switchOn();
@@ -108,7 +110,8 @@ void mqttTaskcode(void *parameter) {
       // Attempt to connect
       if (client.connect(clientId.c_str())) {
         Serial.println("connected");
-        client.subscribe(topic);
+        client.subscribe(topic1);
+        client.subscribe(topic2);
         mqttConn = true;
       } else {
         Serial.print("failed, rc=");
@@ -150,11 +153,7 @@ void wifiTaskcode(void *parameter) {
 }
 
 int simulaTemperatura(void) {
-  static int t = 20, d = 1;
-  t += d;
-  if(t >= 25) d = -1;
-  else if(t <= 15) d = 1;
-  return t;
+  return random() % 21 + 15;
 }
 
 void termoTaskcode(void *parameter) {

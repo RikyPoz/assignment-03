@@ -1,16 +1,18 @@
 package unit;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import unit.ControlUnit.Mode;
 import io.vertx.core.http.HttpServerResponse;
 
-import java.util.Arrays;
+public class HttpServer extends VerticleService {
 
-public class HttpServer extends AbstractVerticle {
+    public HttpServer(ControlUnit controlUnit) {
+        super(controlUnit);
+    }
 
     @Override
     public void start() {
@@ -47,7 +49,7 @@ public class HttpServer extends AbstractVerticle {
         HttpServerResponse response = context.response();
 
         // Recuperiamo l'ultimo dal DataStore
-        JsonObject latestData = DataStore.getLatestData();
+        JsonObject latestData = controlUnit.getLatestData();
 
         response.putHeader("content-type", "application/json")
                 .end(latestData.encode());
@@ -59,7 +61,7 @@ public class HttpServer extends AbstractVerticle {
         String nString = context.request().getParam("count");
         int N = (nString != null && !nString.isEmpty()) ? Integer.parseInt(nString) : 10;
 
-        JsonObject latestNtemperature = DataStore.getLatestNtemperature(N);
+        JsonObject latestNtemperature = controlUnit.getLatestNtemperature(N);
 
         response.putHeader("content-type", "application/json")
                 .end(latestNtemperature.encode());
@@ -69,13 +71,17 @@ public class HttpServer extends AbstractVerticle {
         JsonObject body = context.getBodyAsJson();
         String newMode = body.getString("mode");
 
-        controlUnit.setMode(newMode);
+        if (newMode.equals(Mode.MANUAL.toString())) {
+            controlUnit.setMode(Mode.MANUAL);
+        } else if (newMode.equals(Mode.AUTOMATIC.toString())) {
+            controlUnit.setMode(Mode.AUTOMATIC);
+        }
         context.response().end(new JsonObject().put("status", "Mode changed").encode());
     }
 
     private void handleWindowPosition(RoutingContext context) {
         JsonObject body = context.getBodyAsJson();
-        double position = body.getDouble("position");
+        int position = body.getInteger("position");
 
         controlUnit.setWindowPosition(position);
         context.response().end(new JsonObject().put("status", "Window position updated").encode());

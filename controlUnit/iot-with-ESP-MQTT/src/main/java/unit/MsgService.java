@@ -33,7 +33,7 @@ public class MsgService {
                             .put("temperature", temperature)
                             .put("timestamp", System.currentTimeMillis());
 
-                    DataStore.saveTemperatureData(temperature, "UNKNOWN", 0);
+                    controlUnit.saveTemperatureData(temperature, "UNKNOWN", 0);
                 }
             }
         } catch (InterruptedException e) {

@@ -30,6 +30,13 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.mycompany</groupId>
+      <artifactId>jssc</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>controlUnit/iot-with-ESP-MQTT/lib/*.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version> 4.2.6</version>

@@ -10,14 +10,14 @@ WindowControlTask::WindowControlTask(Window *window)
 void WindowControlTask::init(int period)
 {
     Task::init(period);
-    state = UNIT_CONTROL;
+    state = AUTOMATIC;
 }
 
 void WindowControlTask::tick()
 {
     switch (state)
     {
-    case UNIT_CONTROL:
+    case AUTOMATIC:
         if (window->getState() == Window::AUTOMATIC)
         {
             int pos = window->getWindowLevel();
@@ -25,12 +25,12 @@ void WindowControlTask::tick()
         }
         else
         {
-            state = POT_CONTROL;
+            state = MANUAL;
         }
 
         break;
 
-    case POT_CONTROL:
+    case MANUAL:
         if (window->getState() == Window::MANUAL)
         {
             int pos = window->getPotValue();
@@ -44,7 +44,7 @@ void WindowControlTask::tick()
         }
         else
         {
-            state = UNIT_CONTROL;
+            state = AUTOMATIC;
         }
 
         break;

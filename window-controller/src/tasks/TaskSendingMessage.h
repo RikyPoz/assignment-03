@@ -2,7 +2,7 @@
 #define __TASKSENDINGMESSAGE__
 
 #include "tasks/TaskWithTimer.h"
-#include "Window/Window.h"
+#include "window/Window.h"
 
 class TaskSendingMessage : public TaskWithTimer
 {

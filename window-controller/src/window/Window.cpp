@@ -88,3 +88,7 @@ void Window::updateTemp(String temp)
     temperature = temp;
     display->manualMessage(temperature);
 }
+
+bool Window::isAuto() {
+    return state == Window::AUTOMATIC;
+}

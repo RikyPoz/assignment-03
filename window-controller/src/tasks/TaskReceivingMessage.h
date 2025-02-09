@@ -2,7 +2,7 @@
 #define __TASKRECEIVEMESSAGE__
 
 #include "tasks/Task.h"
-#include "Window/Window.h"
+#include "window/Window.h"
 
 class TaskReceivingMessage : public Task
 {

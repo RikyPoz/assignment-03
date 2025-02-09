@@ -15,8 +15,8 @@ private:
     Window *window;
     enum DetectionState
     {
-        UNIT_CONTROL,
-        POT_CONTROL
+        AUTOMATIC,
+        MANUAL
     } state;
 };
 

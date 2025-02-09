@@ -17,8 +17,8 @@ void TaskSendingMessage::tick()
     case SENDING:
     {
         int lvl = window->getWindowLevel();
-        Serial.println("Window Level before sending: " + String(lvl));
-        // MsgService.sendMsg("WindowLevel:" + String(lvl));
+        String mode = window->getState();
+        MsgService.sendMsg(String(lvl)+","+String(mode));
         resetTimer();
         state = WAIT;
         break;

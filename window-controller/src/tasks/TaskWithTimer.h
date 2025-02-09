@@ -3,17 +3,6 @@
 
 #include "Task.h"
 
-/*
-    eliminare t locale
-    sostituire:
-    t = millis(); -> resetTimer();
-    millis() - t -> getElapsedTime()
-    in:
-    TaskUserDetection
-    TaskMonitorWasteLevel
-    TaskTimer
-    (TaskDetectButton)
-*/
 class TaskWithTimer : public Task {
 public:
     void init(int period) override {

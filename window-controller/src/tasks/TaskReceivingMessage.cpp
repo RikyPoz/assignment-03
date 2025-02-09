@@ -18,25 +18,23 @@ void TaskReceivingMessage::tick()
             String temp = msg.substring(11);
             window->updateTemp(temp);
         }
-        else if (msg.startsWith("level_"))
+        else if (msg.startsWith("position_"))
         {
-            int level = msg.substring(6).toInt();
+            int level = msg.substring(8).toInt();
             window->updateWindowLevel(level);
+        }
+        else if (msg.startsWith("mode_"))
+        {
+            String mode = msg.substring(4);
+            if (mode.equals("AUTOMATIC")) {
+                window->notifyAutomatic();
+            } else if (mode.equals("MANUAL")) {
+                window->notifyManual();
+            }
         }
         else
         {
             Serial.println("Error: Unknown message");
         }
-
-        /* se facciamo un unico msg "temperature_X,stato_Y"
-        int separatorIndex = msg.indexOf(',');
-        if (separatorIndex != -1) {
-            String tempStr = msg.substring(11, separatorIndex);
-            String stateStr = msg.substring(separatorIndex + 1);
-
-            float temp = tempStr.toFloat();
-
-            window->updateTemp(temp);
-            window->updateState(stateStr);*/
     }
 }

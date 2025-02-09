@@ -21,6 +21,7 @@ public:
     // Metodi di gestione dello stato
     State getState();
     bool isStateChanged();
+    bool isAuto();
 
     // Interrogazioni sensori
     bool readButton();

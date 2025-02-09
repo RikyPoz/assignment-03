@@ -1,10 +1,10 @@
 #ifndef __MODALITYTASK__
 #define __MODALITYTASK__
 
-#include "tasks/TaskWithTimer.h"
-#include "Window/Window.h"
+#include "tasks/Task.h"
+#include "window/Window.h"
 
-class ModalityTask : public TaskWithTimer
+class ModalityTask : public Task
 {
 public:
     ModalityTask(Window *window);

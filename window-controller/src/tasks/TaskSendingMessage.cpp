@@ -16,9 +16,18 @@ void TaskSendingMessage::tick()
     {
     case SENDING:
     {
+        String modality;
         int lvl = window->getWindowLevel();
-        String mode = window->getState();
-        MsgService.sendMsg(String(lvl)+","+String(mode));
+        Window::State mode = window->getState();
+        if (mode == 0)
+        {
+            modality = "AUTOMATIC";
+        }
+        else if (mode == 1)
+        {
+            modality = "MANUAL";
+        }
+        MsgService.sendMsg(String(lvl) + "," + modality);
         resetTimer();
         state = WAIT;
         break;

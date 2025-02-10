@@ -1,13 +1,9 @@
 package unit;
 
-import io.vertx.core.json.JsonObject;
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MsgService {
-    private static final String OPEN = "open";
-    private static final String CLOSE = "close";
     private final ControlUnit controlUnit;
 
     private final SerialCommChannel channel;
@@ -42,7 +38,7 @@ public class MsgService {
             String msg = msgToSend.poll();
             channel.sendMsg(msg);
         }
-        channel.sendMsg("temperature_"+controlUnit.getLatestNtemperature(0));
+        channel.sendMsg("temperature_" + controlUnit.getLatestNtemperature(0));
     }
 
     public void enqueueMessage(String message) {

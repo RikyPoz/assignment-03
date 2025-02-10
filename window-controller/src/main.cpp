@@ -54,17 +54,16 @@ void setup()
     windowControlTask = new WindowControlTask(window);
     windowControlTask->init(WINDOW_CONTROL_PERIOD);
 
-    sendingMessageTask = new TaskSendingMessage(window);
-    sendingMessageTask->init(SENDING_MESSAGE_PERIOD);
-
     receiveMessageTask = new TaskReceivingMessage(window);
     receiveMessageTask->init(RECEIVING_MESSAGE_PERIOD);
+
+    sendingMessageTask = new TaskSendingMessage(window);
+    sendingMessageTask->init(SENDING_MESSAGE_PERIOD);
 
     scheduler.addTask(modalityTask);
     scheduler.addTask(windowControlTask);
     scheduler.addTask(receiveMessageTask);
     scheduler.addTask(sendingMessageTask);
-    Serial.println("start loop");
 }
 
 void loop()

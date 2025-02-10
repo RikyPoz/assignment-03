@@ -18,27 +18,31 @@ void ModalityTask::tick()
     switch (state)
     {
     case AUTOMATIC:
-        if (window->isAuto()) {
+        if (window->isAuto())
+        {
             if (window->readButton())
             {
                 state = MANUAL;
                 window->notifyManual();
             }
-
-            window->updateWindowLevel(random(1, 100)); // da togliere è per simulare
-        } else {
+        }
+        else
+        {
             state = MANUAL;
         }
         break;
 
     case MANUAL:
-        if (!window->isAuto()) {
+        if (!window->isAuto())
+        {
             if (window->readButton())
             {
                 state = AUTOMATIC;
                 window->notifyAutomatic();
             }
-        } else {
+        }
+        else
+        {
             state = AUTOMATIC;
         }
         break;

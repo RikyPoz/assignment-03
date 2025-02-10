@@ -1,6 +1,6 @@
 package unit;
 
-import io.vertx.core.AbstractVerticle;
+import java.util.Random;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttClient;
@@ -48,6 +48,20 @@ public class MQTTAgent extends VerticleService {
                 System.out.println("[MQTT] Connessione fallita!");
             }
         });
+
+        vertx.setPeriodic(3000, id -> sendProva());
+    }
+
+    void sendProva() {
+        Random rand = new Random();
+
+        int temp = rand.nextInt((30 - 20) + 1) + 20;
+        JsonObject json = new JsonObject().put("temperatura", temp);
+        client.publish(TOPIC_TEMPERATURE,
+                Buffer.buffer(json.encode()),
+                MqttQoS.AT_LEAST_ONCE,
+                false,
+                false);
     }
 
     // Invia la frequenza di aggiornamento
@@ -63,4 +77,5 @@ public class MQTTAgent extends VerticleService {
             System.out.println("[MQTT] Frequenza inviata: " + period + "s");
         }
     }
+
 }

@@ -20,7 +20,7 @@ void WindowControlTask::tick()
     case AUTOMATIC:
         if (window->getState() == Window::AUTOMATIC)
         {
-            int pos = window->getWindowLevel();
+            int pos = window->getDashboardValue();
             window->moveWindow(pos);
         }
         else
@@ -33,13 +33,20 @@ void WindowControlTask::tick()
     case MANUAL:
         if (window->getState() == Window::MANUAL)
         {
-            int pos = window->getPotValue();
-            window->readPotValue();
-            int newPos = window->getPotValue();
-            if (pos != newPos)
+            int windowLevel = window->getWindowLevel();
+            int dashboardValue = window->getDashboardValue();
+            window->updatePotValue();
+            int potValue = window->getPotValue();
+
+            if (windowLevel != potValue)
             {
-                window->updateWindowLevel(newPos);
-                window->moveWindow(newPos);
+                window->updateWindowLevel(potValue);
+                window->moveWindow(potValue);
+            }
+            else if (windowLevel != dashboardValue)
+            {
+                window->updateWindowLevel(dashboardValue);
+                window->moveWindow(dashboardValue);
             }
         }
         else

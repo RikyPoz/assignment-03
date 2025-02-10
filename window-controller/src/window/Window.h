@@ -25,12 +25,15 @@ public:
 
     // Interrogazioni sensori
     bool readButton();
-    int getPotValue();
-    void readPotValue();
     void moveWindow(int angle);
-    int getWindowLevel();
     void updateTemp(String temp);
+
     void updateWindowLevel(int level);
+    int getWindowLevel();
+    void updateDashboardValue(int value);
+    int getDashboardValue();
+    void updatePotValue();
+    int getPotValue();
 
     // Eventi per cambiare stato
     void notifyAutomatic();
@@ -44,9 +47,10 @@ private:
     ServoMotor *servo;
     ButtonImpl *button;
     Potentiometer *pot;
-    int windowLevel;
     String temperature; // solo da visualizzare
+    int windowLevel;
     int potValue;
+    int dashboardValue;
 };
 
 #endif

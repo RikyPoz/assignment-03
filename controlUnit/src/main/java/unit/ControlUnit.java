@@ -8,6 +8,7 @@ public class ControlUnit {
     public enum Mode {
         AUTOMATIC, MANUAL;
     }
+
     private final DataStore dataStore;
     private int windowPosition; // Posizione finestra (0 = chiusa, 100 = aperta)
     private State state;
@@ -30,7 +31,7 @@ public class ControlUnit {
             mode = ControlUnit.Mode.AUTOMATIC;
         }
         if (notifyMode) {
-            observer.notifyEvent("mode_"+mode.toString());
+            observer.notifyEvent("mode_" + mode.toString());
         }
         System.out.println("Modalità cambiata a: " + mode);
     }
@@ -40,7 +41,7 @@ public class ControlUnit {
             this.windowPosition = position;
             System.out.println("Finestra impostata al " + position + "%");
             if (notifyWindow) {
-                observer.notifyEvent("position_"+String.valueOf(position));
+                observer.notifyEvent("position_" + String.valueOf(position));
             }
         }
     }
@@ -78,7 +79,8 @@ public class ControlUnit {
                 } else if (state == State.TOO_HOT) {
                     windowPosition = 100;
                 } else {
-                    windowPosition = (int)((temperature - State.NORMAL.getLimit())*100 / (State.HOT.getLimit() - State.NORMAL.getLimit()));
+                    windowPosition = (int) ((temperature - State.NORMAL.getLimit()) * 100
+                            / (State.HOT.getLimit() - State.NORMAL.getLimit()));
                 }
             }
         }

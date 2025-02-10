@@ -17,6 +17,8 @@ Window::Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMo
     servo->on();
     servo->setPosition(CLOSED_POS);
     windowLevel = 0;
+    dashboardValue = 0;
+    potValue = 0;
     temperature = "0";
 }
 
@@ -63,19 +65,27 @@ int Window::getPotValue()
     return potValue;
 }
 
-void Window::readPotValue()
+void Window::updatePotValue()
 {
     potValue = pot->detectValue();
 }
 
-void Window::moveWindow(int angle)
+void Window::moveWindow(int pos)
 {
-    servo->setPosition(angle);
+    servo->setPosition(pos);
 }
 
 int Window::getWindowLevel()
 {
     return windowLevel;
+}
+void Window::updateDashboardValue(int value)
+{
+    dashboardValue = value;
+}
+int Window::getDashboardValue()
+{
+    return dashboardValue;
 }
 void Window::updateWindowLevel(int level)
 {
@@ -89,6 +99,7 @@ void Window::updateTemp(String temp)
     display->manualMessage(temperature);
 }
 
-bool Window::isAuto() {
+bool Window::isAuto()
+{
     return state == Window::AUTOMATIC;
 }

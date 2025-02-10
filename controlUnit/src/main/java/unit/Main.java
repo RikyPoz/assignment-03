@@ -1,7 +1,5 @@
 package unit;
 
-import java.io.Serial;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.Promise;
@@ -24,7 +22,13 @@ public class Main extends AbstractVerticle {
         vertx.deployVerticle(mqttAgent);
 
         // Avvia il servizio seriale per la comunicazione con Arduino
-        vertx.deployVerticle(serialService);
+        vertx.deployVerticle(serialService, res -> {
+            if (res.succeeded()) {
+                System.out.println("[MAIN] SerialService avviato con successo!");
+            } else {
+                System.err.println("[MAIN] Errore nell'avvio di SerialService: " + res.cause());
+            }
+        });
 
         startPromise.complete();
 

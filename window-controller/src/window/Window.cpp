@@ -10,16 +10,21 @@ Window::Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMo
     this->pot = pot;
     this->servo = servo;
 
-    changeState(AUTOMATIC);
-    display->init();
-    display->turnOnDisplay();
-    display->automaticMessage();
-    servo->on();
-    servo->setPosition(CLOSED_POS);
     windowLevel = 0;
     dashboardValue = 0;
     potValue = 0;
-    temperature = "0";
+    temperature = 0.0;
+
+    display->init();
+    display->turnOnDisplay();
+    display->defaultMessage();
+    servo->on();
+    servo->setPosition(CLOSED_POS);
+    notifyAutomatic();
+
+    dashboardValueChanged = false;
+    windowLevelChanged = false;
+    modeChanged = true;
 }
 
 Window::State Window::getState()
@@ -30,28 +35,18 @@ Window::State Window::getState()
 void Window::changeState(Window::State newState)
 {
     state = newState;
-    stateChanged = true;
-}
-
-bool Window::isStateChanged()
-{
-    if (stateChanged)
-    {
-        stateChanged = false;
-        return true;
-    }
-    return false;
+    modeChanged = true;
 }
 
 void Window::notifyAutomatic()
 {
-    display->automaticMessage();
+    display->updateMode("AUTOMATIC");
     changeState(AUTOMATIC);
 }
 
 void Window::notifyManual()
 {
-    display->manualMessage(temperature);
+    display->updateMode("MANUAL   ");
     changeState(MANUAL);
 }
 
@@ -65,14 +60,46 @@ int Window::getPotValue()
     return potValue;
 }
 
+bool Window::didDashboardValueChanged()
+{
+    return dashboardValueChanged;
+}
+
 void Window::updatePotValue()
 {
-    potValue = pot->detectValue();
+    int newPotValue = pot->detectValue();
+    potValue = newPotValue != potValue ? newPotValue : potValue;
 }
 
 void Window::moveWindow(int pos)
 {
     servo->setPosition(pos);
+    windowLevel = pos;
+    windowLevelChanged = true;
+    dashboardValueChanged = false; // qui o da cambiare?
+
+    display->updateLevel(String(windowLevel));
+}
+
+float Window::getTemp()
+{
+    return temperature;
+}
+
+bool Window::didWindowLevelChanged()
+{
+    return windowLevelChanged;
+}
+
+bool Window::didModeChanged()
+{
+    return modeChanged;
+}
+
+void Window::notifySending()
+{
+    windowLevelChanged = false;
+    modeChanged = false;
 }
 
 int Window::getWindowLevel()
@@ -82,21 +109,18 @@ int Window::getWindowLevel()
 void Window::updateDashboardValue(int value)
 {
     dashboardValue = value;
+    dashboardValueChanged = true;
 }
+
 int Window::getDashboardValue()
 {
     return dashboardValue;
 }
-void Window::updateWindowLevel(int level)
-{
-    windowLevel = level;
-    Serial.println("WindowLevel update:" + String(getWindowLevel()));
-}
 
-void Window::updateTemp(String temp)
+void Window::updateTemp(float temp)
 {
     temperature = temp;
-    display->manualMessage(temperature);
+    display->updateTemperature(String(temperature));
 }
 
 bool Window::isAuto()

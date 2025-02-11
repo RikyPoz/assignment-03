@@ -13,9 +13,9 @@
 
 // TASKS
 #include "tasks/ModalityTask.h"
-#include "tasks/TaskSendingMessage.h"
 #include "tasks/TaskReceivingMessage.h"
 #include "tasks/WindowControlTask.h"
+#include "tasks/TaskSending.h"
 
 // COSTANT
 #include "const.h"
@@ -34,14 +34,15 @@ Display display(&lcd);
 
 // TASKS
 
-Task *sendingMessageTask;
 Task *receiveMessageTask;
 Task *modalityTask;
 Task *windowControlTask;
+Task *sendingTask;
 
 void setup()
 {
     MsgService.init();
+
     window = new Window(&button, &display, &pot, &servo);
 
     scheduler.init(SCHEDULER_BASE_PERIOD);
@@ -57,13 +58,13 @@ void setup()
     receiveMessageTask = new TaskReceivingMessage(window);
     receiveMessageTask->init(RECEIVING_MESSAGE_PERIOD);
 
-    sendingMessageTask = new TaskSendingMessage(window);
-    sendingMessageTask->init(SENDING_MESSAGE_PERIOD);
+    sendingTask = new TaskSending(window);
+    sendingTask->init(SENDING_MESSAGE_PERIOD);
 
+    scheduler.addTask(sendingTask);
     scheduler.addTask(modalityTask);
     scheduler.addTask(windowControlTask);
     scheduler.addTask(receiveMessageTask);
-    scheduler.addTask(sendingMessageTask);
 }
 
 void loop()

@@ -2,6 +2,8 @@
 #include "Arduino.h"
 #include "const.h"
 
+#define BOUNCING_TIME 150
+
 ModalityTask::ModalityTask(Window *window)
 {
     this->window = window;
@@ -22,8 +24,10 @@ void ModalityTask::tick()
         {
             if (window->readButton())
             {
-                state = MANUAL;
+                state = WAIT;
+                precState = AUTOMATIC;
                 window->notifyManual();
+                resetTimer();
             }
         }
         else
@@ -37,8 +41,10 @@ void ModalityTask::tick()
         {
             if (window->readButton())
             {
-                state = AUTOMATIC;
+                state = WAIT;
+                precState = MANUAL;
                 window->notifyAutomatic();
+                resetTimer();
             }
         }
         else
@@ -46,5 +52,13 @@ void ModalityTask::tick()
             state = AUTOMATIC;
         }
         break;
+    case WAIT:
+    {
+        if (getElapsedTime() > BOUNCING_TIME)
+        {
+            state = precState == AUTOMATIC ? MANUAL : AUTOMATIC;
+        }
+        break;
+    }
     }
 }

@@ -20,20 +20,24 @@ public:
 
     // Metodi di gestione dello stato
     State getState();
-    bool isStateChanged();
     bool isAuto();
 
     // Interrogazioni sensori
     bool readButton();
     void moveWindow(int angle);
-    void updateTemp(String temp);
+    void updateTemp(float temp);
+    float getTemp();
 
-    void updateWindowLevel(int level);
+    bool didWindowLevelChanged();
+    bool didModeChanged();
+    void notifySending();
+
     int getWindowLevel();
     void updateDashboardValue(int value);
     int getDashboardValue();
     void updatePotValue();
     int getPotValue();
+    bool didDashboardValueChanged();
 
     // Eventi per cambiare stato
     void notifyAutomatic();
@@ -42,15 +46,17 @@ public:
 private:
     void changeState(State newState);
     State state; // Stato attuale della FSM
-    bool stateChanged;
     Display *display;
     ServoMotor *servo;
     ButtonImpl *button;
     Potentiometer *pot;
-    String temperature; // solo da visualizzare
+    float temperature; // solo da visualizzare
     int windowLevel;
     int potValue;
     int dashboardValue;
+    bool dashboardValueChanged;
+    bool windowLevelChanged;
+    bool modeChanged;
 };
 
 #endif

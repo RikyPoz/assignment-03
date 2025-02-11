@@ -14,8 +14,10 @@ public:
     void turnOnDisplay();
 
     // Displayable messages
-    void automaticMessage();
-    void manualMessage(String temp);
+    void defaultMessage();
+    void updateMode(String mode);
+    void updateLevel(String windowLevel);
+    void updateTemperature(String temp);
 
 private:
     LiquidCrystal_I2C *lcd;

@@ -1,10 +1,10 @@
 #ifndef __MODALITYTASK__
 #define __MODALITYTASK__
 
-#include "tasks/Task.h"
+#include "tasks/TaskWithTimer.h"
 #include "window/Window.h"
 
-class ModalityTask : public Task
+class ModalityTask : public TaskWithTimer
 {
 public:
     ModalityTask(Window *window);
@@ -13,11 +13,14 @@ public:
 
 private:
     Window *window;
-    enum DetectionState
+    enum State
     {
         AUTOMATIC,
-        MANUAL
+        MANUAL,
+        WAIT
     } state;
+
+    State precState;
 };
 
 #endif

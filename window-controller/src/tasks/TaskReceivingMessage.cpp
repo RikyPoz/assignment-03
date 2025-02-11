@@ -14,22 +14,28 @@ void TaskReceivingMessage::tick()
         String msg = MsgService.receiveMsg()->getContent();
         if (msg.startsWith("temperature_"))
         {
-            String temp = msg.substring(11);
-            window->updateTemp(temp);
+            float temp = msg.substring(11).toFloat();
+            if (window->getTemp() != temp)
+            {
+                window->updateTemp(temp);
+            }
         }
         else if (msg.startsWith("position_"))
         {
             int value = msg.substring(8).toInt();
-            window->updateDashboardValue(value);
+            if (window->getDashboardValue() != value)
+            {
+                window->updateDashboardValue(value);
+            }
         }
         else if (msg.startsWith("mode_"))
         {
             String mode = msg.substring(4);
-            if (mode.equals("AUTOMATIC"))
+            if (mode.equals("AUTOMATIC") && !window->isAuto())
             {
                 window->notifyAutomatic();
             }
-            else if (mode.equals("MANUAL"))
+            else if (mode.equals("MANUAL") && window->isAuto())
             {
                 window->notifyManual();
             }

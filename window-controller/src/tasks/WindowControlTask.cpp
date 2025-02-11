@@ -1,6 +1,7 @@
 #include "WindowControlTask.h"
 #include "Arduino.h"
 #include "const.h"
+#define TOLERANCE 2
 
 WindowControlTask::WindowControlTask(Window *window)
 {
@@ -20,8 +21,11 @@ void WindowControlTask::tick()
     case AUTOMATIC:
         if (window->getState() == Window::AUTOMATIC)
         {
-            int pos = window->getDashboardValue();
-            window->moveWindow(pos);
+            int dashboardPos = window->getDashboardValue();
+            if (window->didDashboardValueChanged())
+            {
+                window->moveWindow(dashboardPos);
+            }
         }
         else
         {
@@ -33,20 +37,20 @@ void WindowControlTask::tick()
     case MANUAL:
         if (window->getState() == Window::MANUAL)
         {
-            int windowLevel = window->getWindowLevel();
             int dashboardValue = window->getDashboardValue();
-            window->updatePotValue();
-            int potValue = window->getPotValue();
 
-            if (windowLevel != potValue)
+            int potValue = window->getPotValue();
+            window->updatePotValue();
+            int newPotValue = window->getPotValue();
+
+            if (abs(potValue - newPotValue) > TOLERANCE)
             {
-                window->updateWindowLevel(potValue);
-                window->moveWindow(potValue);
+                window->moveWindow(newPotValue);
             }
-            else if (windowLevel != dashboardValue)
+            else if (window->didDashboardValueChanged())
             {
-                window->updateWindowLevel(dashboardValue);
                 window->moveWindow(dashboardValue);
+                // dashboardValueChanged = false qui o in moveWindow per entrambi?
             }
         }
         else

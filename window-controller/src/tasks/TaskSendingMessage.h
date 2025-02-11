@@ -1,10 +1,11 @@
 #ifndef __TASKSENDINGMESSAGE__
 #define __TASKSENDINGMESSAGE__
 
-#include "tasks/TaskWithTimer.h"
+#include "tasks/Task.h"
 #include "window/Window.h"
+#include "kernel/MsgService.h"
 
-class TaskSendingMessage : public TaskWithTimer
+class TaskSendingMessage : public Task
 {
 
 public:
@@ -12,7 +13,7 @@ public:
     void tick();
 
 private:
-    enum State
+    enum SendingState
     {
         WAIT,
         SENDING

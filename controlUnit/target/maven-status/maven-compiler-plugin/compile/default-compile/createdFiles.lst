@@ -1,0 +1,13 @@
+unit/SerialService.class
+unit/CommChannel.class
+unit/MsgService.class
+unit/ControlUnit.class
+unit/DataStore.class
+unit/MQTTAgent.class
+unit/VerticleService.class
+unit/Main.class
+unit/State.class
+unit/Observer.class
+unit/HttpServer.class
+unit/SerialCommChannel.class
+unit/ControlUnit$Mode.class

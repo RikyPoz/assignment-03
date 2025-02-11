@@ -22,18 +22,38 @@ void Display::turnOffDisplay()
     lcd->noBacklight();
 }
 
-void Display::automaticMessage()
+void Display::defaultMessage()
 {
     lcd->clear();
-    lcd->setCursor(4, 1);
-    lcd->print("AUTOMATIC MODE");
+    lcd->setCursor(2, 0);
+    lcd->print("Mode: ");
+    lcd->setCursor(2, 1);
+    lcd->print("Temp (C): ");
+    lcd->print("0");
+    lcd->setCursor(2, 2);
+    lcd->print("Window (%): ");
+    lcd->print("0");
 }
 
-void Display::manualMessage(String temp)
+void Display::updateMode(String mode)
 {
-    lcd->clear();
-    lcd->setCursor(4, 1);
-    lcd->print("MANUAL MODE");
-    lcd->setCursor(4, 2);
+    lcd->setCursor(2, 0);
+    lcd->print("MODE: ");
+    lcd->print(mode);
+}
+
+void Display::updateTemperature(String temp)
+{
+    lcd->setCursor(2, 1);
+    lcd->print("Temp (C): ");
     lcd->print(temp);
+    lcd->print("  ");
+}
+
+void Display::updateLevel(String windowLevel)
+{
+    lcd->setCursor(2, 2);
+    lcd->print("Window (%): ");
+    lcd->print(windowLevel);
+    lcd->print("  ");
 }

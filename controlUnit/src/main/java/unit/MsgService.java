@@ -21,11 +21,13 @@ public class MsgService {
                 String msg = channel.receiveMsg();
                 System.out.println("[SERIAL] Ricevuto: " + msg);
 
-                String[] values = msg.split(",");
+                String[] values = msg.split("_");
                 if (values.length == 2) {
-                    int windowPosition = Integer.parseInt(values[0]);
-                    controlUnit.setWindowPosition(windowPosition, false);
-                    controlUnit.setMode(values[1], false);
+                    if (values[0].equals("mode")) {
+                        controlUnit.setMode(values[1], false);
+                    } else if (values[0].equals("position")) {
+                        controlUnit.setWindowPositionManually(Integer.parseInt(values[1]), false);
+                    }
                 }
             }
         } catch (InterruptedException e) {
@@ -35,10 +37,11 @@ public class MsgService {
 
     public void send() {
         if (!msgToSend.isEmpty()) {
-            String msg = msgToSend.poll();
+            final String msg = msgToSend.poll();
+            //System.out.println("Invio messaggio: "+msg);
             channel.sendMsg(msg);
         }
-        channel.sendMsg("temperature_" + controlUnit.getLatestNtemperature(0));
+
     }
 
     public void enqueueMessage(String message) {

@@ -76,7 +76,7 @@ public class HttpServer extends VerticleService {
         JsonObject body = context.getBodyAsJson();
         int position = body.getInteger("position");
 
-        controlUnit.setWindowPosition(position, true);
+        controlUnit.setWindowPositionManually(position, true);
         context.response().end(new JsonObject().put("status", "Window position updated").encode());
     }
 

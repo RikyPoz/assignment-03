@@ -20,45 +20,54 @@ void TaskSending::tick()
 {
     switch (state)
     {
-    case SENDING:
-    {
-        String modality;
-        int lvl = window->getWindowLevel();
-        Window::State mode = window->getState();
+        case WAIT:
+        {
+            if (window->didModeChanged()) {
+                state = SENDING_MODE;
+            } else if (window->didWindowLevelChanged() && !window->isAuto()) {
+                state = SENDING_POS;
+            }
+            break;
+        }
+        case SENDING_MODE:
+        {
+            String modality;
+            Window::State mode = window->getState();
 
-        if (mode == Window::AUTOMATIC)
-        {
-            modality = "AUTOMATIC";
+            if (mode == Window::AUTOMATIC)
+            {
+                modality = "AUTOMATIC";
+            }
+            else if (mode == Window::MANUAL)
+            {
+                modality = "MANUAL";
+            }
+            else
+            {
+                modality = "prova";
+            }
+            MsgService.sendMsg("mode_"+modality);
+            window->notifySending(SENDED_MODE);
+            resetTimer();
+            state = TRASM_TIME;
+            break;
         }
-        else if (mode == Window::MANUAL)
+        case SENDING_POS:
         {
-            modality = "MANUAL";
+            int pos = window->getWindowLevel();
+            MsgService.sendMsg("position_"+String(pos));
+            window->notifySending(SENDED_POS);
+            resetTimer();
+            state = TRASM_TIME;
+            break;
         }
-        else
+        case TRASM_TIME:
         {
-            modality = "prova";
+            if (getElapsedTime() >= SENDING_TIME)
+            {
+                state = WAIT;
+            }
+            break;
         }
-        String msg = String(lvl) + "," + modality;
-        MsgService.sendMsg(msg);
-        window->notifySending();
-        resetTimer();
-        state = TRASM_TIME;
-        break;
-    }
-    case TRASM_TIME:
-    {
-        if (getElapsedTime() >= SENDING_TIME)
-        {
-            state = WAIT;
-        }
-        break;
-    }
-    case WAIT:
-    {
-        if (window->didWindowLevelChanged() || window->didModeChanged())
-        {
-            state = SENDING;
-        }
-    }
     }
 }

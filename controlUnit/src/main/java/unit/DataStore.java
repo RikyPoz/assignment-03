@@ -31,6 +31,10 @@ public class DataStore {
         return dataStore.getFirst().put("state", state).put("windowPosition", windowPosition);
     }
 
+    public double getTemperature() {
+        return dataStore.isEmpty() ? 0.0 : dataStore.getFirst().getDouble("temperature");
+    }
+
     // Recupera le ultime N temperature
     public JsonObject getLatestNtemperature(int N) {
         if (dataStore.isEmpty()) {

@@ -23,7 +23,7 @@ const char *topic2 = "periodo";
 
 
 WiFiClient espClient;
-PubSubClient client(espClient);
+PubSubClient client(espClient); 
 TaskHandle_t termoTask, wifiTask, sendTask, mqttTask;
 volatile TickType_t sendPeriod;
 volatile int temperature;
@@ -152,16 +152,12 @@ void wifiTaskcode(void *parameter) {
   }
 }
 
-int simulaTemperatura(void) {
-  return random() % 21 + 15;
-}
-
 void termoTaskcode(void *parameter) {
   Termo termo(TERMO_PIN);
   TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t period = pdMS_TO_TICKS(100);
   for (;;) {
-    temperature = simulaTemperatura();
+    temperature = termo.detectValue();
     xTaskDelayUntil(&xLastWakeTime, period);
   }
 }

@@ -9,5 +9,8 @@ Termo::Termo(int pin)
 
 int Termo::detectValue()
 {
-  return (analogRead(pin) * 0.488) - 50;
+
+  float voltage = analogRead(pin) * 3.3 / 4095.0;
+  float temperatureC = (voltage - 0.5) / 0.01;
+  return temperatureC;
 }

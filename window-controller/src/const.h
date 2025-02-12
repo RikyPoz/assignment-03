@@ -7,6 +7,9 @@
 
 #define CLOSED_POS 0
 
+#define SENDED_POS 0
+#define SENDED_MODE 1
+
 // Periodi in ms
 #define SCHEDULER_BASE_PERIOD 50
 

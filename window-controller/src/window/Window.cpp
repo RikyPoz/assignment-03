@@ -96,10 +96,13 @@ bool Window::didModeChanged()
     return modeChanged;
 }
 
-void Window::notifySending()
+void Window::notifySending(int sended)
 {
-    windowLevelChanged = false;
-    modeChanged = false;
+    if (sended == SENDED_MODE) {
+        modeChanged = false;
+    } else if (sended == SENDED_POS) {
+        windowLevelChanged = false;
+    }
 }
 
 int Window::getWindowLevel()

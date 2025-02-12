@@ -30,7 +30,7 @@ public:
 
     bool didWindowLevelChanged();
     bool didModeChanged();
-    void notifySending();
+    void notifySending(int sended);
 
     int getWindowLevel();
     void updateDashboardValue(int value);

@@ -38,7 +38,7 @@ public class MQTTAgent extends VerticleService {
                     if (json.containsKey("temperatura")) {
                         temperature = json.getInteger("temperatura");
                     }
-                    System.out.println("[MQTT] Temperatura ricevuta: " + temperature);
+                    //System.out.println("[MQTT] Temperatura ricevuta: " + temperature);
 
                     controlUnit.saveTemperature(temperature);
                     sendUpdateFrequency();
@@ -48,20 +48,6 @@ public class MQTTAgent extends VerticleService {
                 System.out.println("[MQTT] Connessione fallita!");
             }
         });
-
-        vertx.setPeriodic(3000, id -> sendProva());
-    }
-
-    void sendProva() {
-        Random rand = new Random();
-
-        int temp = rand.nextInt((30 - 20) + 1) + 20;
-        JsonObject json = new JsonObject().put("temperatura", temp);
-        client.publish(TOPIC_TEMPERATURE,
-                Buffer.buffer(json.encode()),
-                MqttQoS.AT_LEAST_ONCE,
-                false,
-                false);
     }
 
     // Invia la frequenza di aggiornamento
@@ -74,7 +60,7 @@ public class MQTTAgent extends VerticleService {
                     MqttQoS.AT_LEAST_ONCE,
                     false,
                     false);
-            System.out.println("[MQTT] Frequenza inviata: " + period + "s");
+            //System.out.println("[MQTT] Frequenza inviata: " + period + "s");
         }
     }
 

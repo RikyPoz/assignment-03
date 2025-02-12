@@ -2,7 +2,7 @@
 #define __TASKSENDING__
 
 #include "tasks/TaskWithTimer.h"
-#include "Window/Window.h"
+#include "window/Window.h"
 
 class TaskSending : public TaskWithTimer
 {
@@ -15,7 +15,8 @@ private:
     Window *window;
     enum SendingState
     {
-        SENDING,
+        SENDING_POS,
+        SENDING_MODE,
         WAIT,
         TRASM_TIME
 

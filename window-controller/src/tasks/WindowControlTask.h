@@ -2,7 +2,7 @@
 #define __WINDOWCONTROLTASK__
 
 #include "tasks/TaskWithTimer.h"
-#include "Window/Window.h"
+#include "window/Window.h"
 
 class WindowControlTask : public TaskWithTimer
 {

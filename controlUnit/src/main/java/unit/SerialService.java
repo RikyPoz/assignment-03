@@ -20,7 +20,7 @@ public class SerialService extends VerticleService {
             vertx.setPeriodic(200, id -> msgService.read());
 
             // Invio periodico di comandi se ci sono messaggi in coda
-            vertx.setPeriodic(200, id -> msgService.send());
+            vertx.setPeriodic(1000, id -> msgService.send());
 
             startPromise.complete();
         } catch (Exception e) {

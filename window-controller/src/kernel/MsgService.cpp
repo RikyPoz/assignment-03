@@ -37,7 +37,7 @@ void MsgServiceClass::init()
 
 void MsgServiceClass::sendMsg(const String &msg)
 {
-  Serial.println("send msg:" + msg);
+  Serial.println(msg);
 }
 
 void serialEvent()

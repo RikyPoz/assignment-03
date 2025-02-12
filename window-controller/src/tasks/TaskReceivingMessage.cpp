@@ -10,11 +10,12 @@ void TaskReceivingMessage::tick()
 {
     if (MsgService.isMsgAvailable())
     {
-        Serial.println("Messaggio ricevuto dalla central unit");
         String msg = MsgService.receiveMsg()->getContent();
+        //Serial.println("[ARDUINO] ricevo MSG: "+msg);
         if (msg.startsWith("temperature_"))
         {
-            float temp = msg.substring(11).toFloat();
+            float temp = msg.substring(12).toFloat();
+            //Serial.println("[ARDUINO] ricevo temp: "+String(temp));
             if (window->getTemp() != temp)
             {
                 window->updateTemp(temp);
@@ -22,7 +23,8 @@ void TaskReceivingMessage::tick()
         }
         else if (msg.startsWith("position_"))
         {
-            int value = msg.substring(8).toInt();
+            int value = msg.substring(9).toInt();
+            //Serial.println("[ARDUINO] ricevo pos: "+String(value));
             if (window->getDashboardValue() != value)
             {
                 window->updateDashboardValue(value);
@@ -30,7 +32,7 @@ void TaskReceivingMessage::tick()
         }
         else if (msg.startsWith("mode_"))
         {
-            String mode = msg.substring(4);
+            String mode = msg.substring(5);
             if (mode.equals("AUTOMATIC") && !window->isAuto())
             {
                 window->notifyAutomatic();
@@ -42,7 +44,7 @@ void TaskReceivingMessage::tick()
         }
         else
         {
-            Serial.println("Error: Unknown message");
+            Serial.println("Error: Unknown message: "+msg);
         }
     }
 }

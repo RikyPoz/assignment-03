@@ -46,12 +46,9 @@ public class HttpServer extends VerticleService {
 
     private void handleGetSystemStatus(RoutingContext context) {
         HttpServerResponse response = context.response();
-
-        // Recuperiamo l'ultimo dal DataStore
         JsonObject latestData = controlUnit.getLatestData();
 
-        response.putHeader("content-type", "application/json")
-                .end(latestData.encode());
+        response.putHeader("content-type", "application/json").end(latestData.encode());
     }
 
     private void getLatestNtemperature(RoutingContext context) {
@@ -62,8 +59,7 @@ public class HttpServer extends VerticleService {
 
         JsonObject latestNtemperature = controlUnit.getLatestNtemperature(N);
 
-        response.putHeader("content-type", "application/json")
-                .end(latestNtemperature.encode());
+        response.putHeader("content-type", "application/json").end(latestNtemperature.encode());
     }
 
     private void handleSetMode(RoutingContext context) {

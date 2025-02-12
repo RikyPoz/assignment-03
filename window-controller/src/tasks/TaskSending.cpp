@@ -32,7 +32,7 @@ void TaskSending::tick()
         case SENDING_MODE:
         {
             String modality;
-            Window::State mode = window->getState();
+            Window::Mode mode = window->getMode();
 
             if (mode == Window::AUTOMATIC)
             {

@@ -1,5 +1,6 @@
 package unit;
-    
+import java.util.Arrays;
+
 public enum State {
 
     NORMAL(2000, 20),
@@ -20,5 +21,9 @@ public enum State {
 
     public double getLimit() {
         return this.limit;
+    }
+
+    public static State getState(double temp) {
+        return Arrays.stream(State.values()).filter(s -> temp < s.getLimit()).findFirst().get();
     }
 }

@@ -19,7 +19,7 @@ void WindowControlTask::tick()
     switch (state)
     {
     case AUTOMATIC:
-        if (window->getState() == Window::AUTOMATIC)
+        if (window->getMode() == Window::AUTOMATIC)
         {
             int dashboardPos = window->getDashboardValue();
             if (window->didDashboardValueChanged())
@@ -35,7 +35,7 @@ void WindowControlTask::tick()
         break;
 
     case MANUAL:
-        if (window->getState() == Window::MANUAL)
+        if (window->getMode() == Window::MANUAL)
         {
             int dashboardValue = window->getDashboardValue();
 

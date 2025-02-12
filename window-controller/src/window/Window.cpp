@@ -27,27 +27,27 @@ Window::Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMo
     modeChanged = true;
 }
 
-Window::State Window::getState()
+Window::Mode Window::getMode()
 {
-    return state;
+    return mode;
 }
 
-void Window::changeState(Window::State newState)
+void Window::changeMode(Window::Mode newMode)
 {
-    state = newState;
+    mode = newMode;
     modeChanged = true;
 }
 
 void Window::notifyAutomatic()
 {
     display->updateMode("AUTOMATIC");
-    changeState(AUTOMATIC);
+    changeMode(AUTOMATIC);
 }
 
 void Window::notifyManual()
 {
     display->updateMode("MANUAL   ");
-    changeState(MANUAL);
+    changeMode(MANUAL);
 }
 
 bool Window::readButton()
@@ -67,8 +67,7 @@ bool Window::didDashboardValueChanged()
 
 void Window::updatePotValue()
 {
-    int newPotValue = pot->detectValue();
-    potValue = newPotValue != potValue ? newPotValue : potValue;
+    potValue = pot->detectValue();
 }
 
 void Window::moveWindow(int pos)
@@ -128,5 +127,5 @@ void Window::updateTemp(float temp)
 
 bool Window::isAuto()
 {
-    return state == Window::AUTOMATIC;
+    return mode == Window::AUTOMATIC;
 }

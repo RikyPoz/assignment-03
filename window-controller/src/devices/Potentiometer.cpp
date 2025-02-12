@@ -10,5 +10,5 @@ Potentiometer::Potentiometer(int pin)
 int Potentiometer::detectValue()
 {
     int val = analogRead(pin);
-    return map(val, 0, 1023, 0, 180);
+    return map(val, 0, 1023, 0, 100);
 }

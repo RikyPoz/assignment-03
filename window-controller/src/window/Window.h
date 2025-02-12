@@ -10,7 +10,7 @@
 class Window
 {
 public:
-    enum State
+    enum Mode
     {
         AUTOMATIC,
         MANUAL
@@ -19,7 +19,7 @@ public:
     Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMotorImpl *servo);
 
     // Metodi di gestione dello stato
-    State getState();
+    Mode getMode();
     bool isAuto();
 
     // Interrogazioni sensori
@@ -44,8 +44,8 @@ public:
     void notifyManual();
 
 private:
-    void changeState(State newState);
-    State state; // Stato attuale della FSM
+    void changeMode(Mode newMode);
+    Mode mode; // Stato attuale della FSM
     Display *display;
     ServoMotor *servo;
     ButtonImpl *button;

@@ -1,7 +1,5 @@
 package unit;
 
-import java.util.Arrays;
-
 import io.vertx.core.json.JsonObject;
 
 public class ControlUnit {
@@ -30,7 +28,7 @@ public class ControlUnit {
             mode = ControlUnit.Mode.MANUAL;
         } else if (newMode.equals(ControlUnit.Mode.AUTOMATIC.toString())) {
             mode = ControlUnit.Mode.AUTOMATIC;
-            calculateWindowPosition(true);
+            updateWindowPosition(dataStore.getTemperature());
         }
         if (notifyMode) {
             observer.notifyEvent("mode_" + mode.toString());
@@ -44,11 +42,12 @@ public class ControlUnit {
         }
     }
 
-    private void setWindowPosition(int pos, Boolean notifyWindow) {
-        this.windowPosition = pos;
-        //System.out.println("Finestra impostata al " + pos + "%");
-        if (notifyWindow) {
-            observer.notifyEvent("position_" + String.valueOf(pos));
+    private void setWindowPosition(int newPos, Boolean notifyWindow) {
+        if (newPos != this.windowPosition) {
+            this.windowPosition = newPos;
+            if (notifyWindow) {
+                observer.notifyEvent("position_" + String.valueOf(newPos));
+            }
         }
     }
 
@@ -77,34 +76,38 @@ public class ControlUnit {
         dataStore.saveTemperatureData(newTemp);
 
         if (oldTemp != newTemp) {
-            calculateWindowPosition(false);
+            updateState(newTemp);
+            updateWindowPosition(newTemp);
+            observer.notifyEvent("temperature_"+String.valueOf(newTemp));
         }
-        
     }
 
     public void addSerialMsgObserver(Observer ob) {
         this.observer = ob;
     }
 
-    private void calculateWindowPosition(Boolean modeChanged) {
-        final double temp = dataStore.getTemperature();
-        State newState = Arrays.stream(State.values()).filter(s -> temp < s.getLimit()).findFirst().get();
-        isStateChanged = state != newState;
-        if (isStateChanged() || modeChanged) {
-            state = newState;
-            if (mode == Mode.AUTOMATIC) {
-                if (state == State.NORMAL) {
-                    setWindowPosition(0, true);
-                } else if (state == State.TOO_HOT) {
-                    setWindowPosition(100, true);
-                }
+    private void updateState(double temp) {
+        State newState = State.getState(temp);
+        isStateChanged = newState != state;
+        state = newState;
+    }
+
+    private void updateWindowPosition(double temp) {
+        if (mode == Mode.AUTOMATIC) {
+            switch (state) {
+                case NORMAL: setWindowPosition(0, true);
+                    break;
+                case TOO_HOT: setWindowPosition(100, true);
+                    break;
+                case HOT: setWindowPosition(posPercent(temp), true);
+                    break;
+                case ALARM :
+                    break;
             }
         }
-        if (mode == Mode.AUTOMATIC && state == State.HOT) {
-            final int pos = (int) ((temp - State.NORMAL.getLimit()) * 100
-                    / (State.HOT.getLimit() - State.NORMAL.getLimit()));
-            setWindowPosition(pos, true);
-        }
-        observer.notifyEvent("temperature_"+String.valueOf(temp));
+    }
+
+    private static int posPercent(double temp) {
+        return (int) ((temp - State.NORMAL.getLimit())*100 / (State.HOT.getLimit() - State.NORMAL.getLimit()));
     }
 }

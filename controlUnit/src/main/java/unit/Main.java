@@ -1,5 +1,7 @@
 package unit;
 
+import java.util.Arrays;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.Promise;
@@ -11,24 +13,9 @@ public class Main extends AbstractVerticle {
 
         DataStore dataStore = new DataStore();
         ControlUnit controlUnit = new ControlUnit(dataStore);
-        HttpServer httpServer = new HttpServer(controlUnit);
-        MQTTAgent mqttAgent = new MQTTAgent(controlUnit);
-        SerialService serialService = new SerialService(controlUnit);
+        VerticleService[] verticles = {new HttpServer(controlUnit), new MQTTAgent(controlUnit), new SerialService(controlUnit)};
 
-        // Avvia il server HTTP per la Dashboard
-        vertx.deployVerticle(httpServer);
-
-        // Avvia il servizio MQTT per ESP
-        vertx.deployVerticle(mqttAgent);
-
-        // Avvia il servizio seriale per la comunicazione con Arduino
-        vertx.deployVerticle(serialService, res -> {
-            if (res.succeeded()) {
-                System.out.println("[MAIN] SerialService avviato con successo!");
-            } else {
-                System.err.println("[MAIN] Errore nell'avvio di SerialService: " + res.cause());
-            }
-        });
+        Arrays.stream(verticles).forEach(v -> vertx.deployVerticle(v));
 
         startPromise.complete();
 

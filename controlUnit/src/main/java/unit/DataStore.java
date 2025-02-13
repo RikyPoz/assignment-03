@@ -4,15 +4,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class DataStore {
 
     private final LinkedList<JsonObject> dataStore = new LinkedList<>();
 
     // Salva i dati della temperatura
-    public void saveTemperatureData(double temperature) {
+    public void saveTemperatureData(double temperature, String mode) {
         JsonObject dataObj = new JsonObject()
                 .put("temperature", temperature)
+                .put("mode", mode)
                 .put("timestamp", System.currentTimeMillis());
 
         dataStore.addFirst(dataObj);
@@ -37,18 +39,15 @@ public class DataStore {
 
     // Recupera le ultime N temperature
     public JsonObject getLatestNtemperature(int N) {
-        if (dataStore.isEmpty()) {
-            return new JsonObject().put("message", "No data available");
-        }
 
-        JsonArray latestTemp = new JsonArray();
+        JsonArray temperatures = new JsonArray();
+        JsonArray timestamps = new JsonArray();
 
-        for (int i = 0; i < N && i < dataStore.size(); i++) {
-            double temp = dataStore.get(i).getDouble("temperature");
-            latestTemp.add(temp);
-        }
+        dataStore.stream().limit(N).forEach(d -> {
+            temperatures.add(d.getDouble("temperature"));
+            timestamps.add(d.getLong("timestamp"));
+        });
 
-        return new JsonObject().put("temperatures", latestTemp);
+        return new JsonObject().put("temperatures", temperatures).put("timestamps", timestamps);
     }
-
 }

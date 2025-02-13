@@ -34,8 +34,8 @@ Window::Mode Window::getMode()
 
 void Window::changeMode(Window::Mode newMode)
 {
+    modeChanged = mode != newMode;
     mode = newMode;
-    modeChanged = true;
 }
 
 void Window::notifyAutomatic()
@@ -75,7 +75,7 @@ void Window::moveWindow(int pos)
     servo->setPosition(pos);
     windowLevel = pos;
     windowLevelChanged = true;
-    dashboardValueChanged = false; // qui o da cambiare?
+    dashboardValueChanged = false;
 
     display->updateLevel(String(windowLevel));
 }

@@ -17,23 +17,28 @@
     </div>
 
 
-    <!-- Display the current average, max, and min values -->
+    <!-- Display the average, max, and min values -->
     <div id="stats">
-        <p><strong>Current Average Temperature:</strong> <span id="avg-temp">0</span> °C</p>
-        <p><strong>Current Max Temperature:</strong> <span id="max-temp">0</span> °C</p>
-        <p><strong>Current Min Temperature:</strong> <span id="min-temp">0</span> °C</p>
+        <p><strong>Average Temperature:</strong> <span id="avg-temp">0</span> °C</p>
+        <p><strong>Max Temperature:</strong> <span id="max-temp">0</span> °C</p>
+        <p><strong>Min Temperature:</strong> <span id="min-temp">0</span> °C</p>
     </div>
 
     <!-- Controlli -->
     <div class="mt-3">
-        <button id="modeBtn" class="btn btn-primary">Attiva modalità MANUALE</button>
+        <button id="manualBtn" class="btn btn-primary">Attiva modalità MANUALE</button>
+        <button id="autoBtn" class="btn btn-primary" disabled>Attiva modalità AUTOMATICA</button>
         <br>
-        <input type="range" id="windowSlider" min="0" max="100" value="0" class="form-range mt-2">
+        <input type="range" id="windowSlider" min="0" max="100" value="0" class="form-range mt-2" disabled>
         <button id="resetAlarmBtn" class="btn btn-danger mt-2 mb-5">Reset ALARM</button>
     </div>
      <!-- Container for the temperature chart -->
-     <div id="chart-container" class = "mb-5">
+    <div id="chart-container" class = "mb-5">
         <canvas id="temperatureChart"></canvas>
+    </div>
+    <div >
+        <label>Number of data</label>
+        <input type="range" id="chartSlider" min="0" max="200" value="30" class="form-range mt-2">
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

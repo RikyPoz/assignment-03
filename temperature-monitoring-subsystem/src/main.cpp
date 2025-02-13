@@ -54,52 +54,65 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
 void sendTaskcode(void *parameter)
 {
+  enum State { WAIT, SEND, DISCONNECTED };
+  const TickType_t RETRY_PERIOD = pdMS_TO_TICKS(5000);
+  const TickType_t WAIT_PERIOD = pdMS_TO_TICKS(100);
   Led redLed(REDLED_PIN);
   Led greenLed(GREENLED_PIN);
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  bool connected = false;
-  const TickType_t retryPeriod = pdMS_TO_TICKS(5000);
+  State state = DISCONNECTED;
+  TickType_t timeElapsed = 0;
 
   Serial.print("sendTask is running on core ");
   Serial.println(xPortGetCoreID());
   for (;;) {
-    if (connected) {
-      if (wifiConn && mqttConn) {
-        Serial.print("Periodo: ");
-        Serial.println(sendPeriod);
-        snprintf(msg, MSG_BUFFER_SIZE, "{\"temperatura\":%d}", temperature);
-        Serial.println(String("Publishing message: ") + msg);
-        client.publish(topic1, msg);
-        xTaskDelayUntil( &xLastWakeTime, sendPeriod);
-      } else {
-        greenLed.switchOff();
-        redLed.switchOn();
-        connected = false;
-      }
-    } else {
-      if (wifiConn && mqttConn) {
-        redLed.switchOff();
-        greenLed.switchOn();
-        connected = true;
-      } else {
-        xTaskDelayUntil( &xLastWakeTime, retryPeriod);
-      }
+    switch (state) {
+      case DISCONNECTED :
+        if (wifiConn && mqttConn) {
+          redLed.switchOff();
+          greenLed.switchOn();
+          state = SEND;
+        } else {
+          xTaskDelayUntil( &xLastWakeTime, RETRY_PERIOD);
+        }
+      break;
+      case SEND :
+        if (wifiConn && mqttConn) {
+          Serial.print("Periodo: ");
+          Serial.println(sendPeriod);
+          snprintf(msg, MSG_BUFFER_SIZE, "{\"temperatura\":%d}", temperature);
+          Serial.println(String("Publishing message: ") + msg);
+          client.publish(topic1, msg);
+          timeElapsed = 0;
+          state = WAIT;
+        } else {
+          greenLed.switchOff();
+          redLed.switchOn();
+          state = DISCONNECTED;
+        }
+      break;
+      case WAIT :
+        xTaskDelayUntil( &xLastWakeTime, WAIT_PERIOD);
+        if (timeElapsed >= sendPeriod) {
+          state = SEND;
+        } else {
+          timeElapsed += WAIT_PERIOD;
+        }
     }
-    
   }
 }
 
 
 void mqttTaskcode(void *parameter) {
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  const TickType_t loopPeriod = pdMS_TO_TICKS(100);
-  const TickType_t retryPeriod = pdMS_TO_TICKS(5000);
+  const TickType_t LOOP_PERIOD = pdMS_TO_TICKS(100);
+  const TickType_t RETRY_PERIOD = pdMS_TO_TICKS(5000);
 
   for (;;) {
     if (mqttConn) {
       if (client.connected()) {
         client.loop();
-        xTaskDelayUntil(&xLastWakeTime, loopPeriod);
+        xTaskDelayUntil(&xLastWakeTime, LOOP_PERIOD);
       } else {
         mqttConn = false;
       }
@@ -117,7 +130,7 @@ void mqttTaskcode(void *parameter) {
         Serial.print("failed, rc=");
         Serial.print(client.state());
         Serial.println(" try again in 5 seconds");
-        xTaskDelayUntil(&xLastWakeTime, retryPeriod);
+        xTaskDelayUntil(&xLastWakeTime, RETRY_PERIOD);
       }
     }
   }
@@ -126,8 +139,8 @@ void mqttTaskcode(void *parameter) {
 
 void wifiTaskcode(void *parameter) {
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  const TickType_t loopPeriod = pdMS_TO_TICKS(100);
-  const TickType_t retryPeriod = pdMS_TO_TICKS(500);
+  const TickType_t LOOP_PERIOD = pdMS_TO_TICKS(100);
+  const TickType_t RETRY_PERIOD = pdMS_TO_TICKS(500);
   for (;;) {
     if (wifiConn) {
       if (WiFi.status() != WL_CONNECTED) {
@@ -136,12 +149,12 @@ void wifiTaskcode(void *parameter) {
         Serial.print("Connecting");
         wifiConn = false;
       } else {
-        xTaskDelayUntil(&xLastWakeTime, loopPeriod);
+        xTaskDelayUntil(&xLastWakeTime, LOOP_PERIOD);
       }
     } else {
       if (WiFi.status() != WL_CONNECTED) {
         Serial.print(" .");
-        xTaskDelayUntil(&xLastWakeTime, retryPeriod);
+        xTaskDelayUntil(&xLastWakeTime, RETRY_PERIOD);
       } else {
         Serial.println("");
         Serial.print("Connected to WiFi network with IP Address: ");

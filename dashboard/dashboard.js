@@ -1,18 +1,37 @@
 const API_URL = "http://localhost:8080";
-const N = 50;
+let N = 30;
 const temperatureData = [];
 
 async function getLastData() {
     try {
         let response = await fetch(`${API_URL}/status`);
         let data = await response.json();
+        const manualBtn = document.getElementById("manualBtn");
+        const autoBtn = document.getElementById("autoBtn");
+        const slider = document.getElementById("windowSlider");
 
         document.getElementById("systemState").textContent = data.state;
         document.getElementById("currentTemp").textContent = data.temperature;
         document.getElementById("windowOpen").textContent = data.windowPosition;
+        slider.value = data.windowPosition;
 
-        // Abilita il pulsante reset ALARM se lo stato è "ALARM"
-        document.getElementById("resetAlarmBtn").disabled = (data.state !== "ALARM");
+        if (data.mode == "MANUAL") {
+            manualBtn.disabled = true;
+            autoBtn.disabled = false;
+            slider.disabled = false;
+        } else if (data.mode == "AUTOMATIC") {
+            manualBtn.disabled = false;
+            autoBtn.disabled = true;
+            slider.disabled = true;
+        }
+        const isAlarm = data.state == "ALARM";
+        document.getElementById("resetAlarmBtn").disabled = !isAlarm;
+        if (isAlarm) {
+            manualBtn.disabled = true;
+            autoBtn.disabled = true;
+            slider.disabled = true;
+        }
+        
     } catch (error) {
         console.error("Errore nel recupero dei dati 1:", error);
     }
@@ -22,7 +41,8 @@ async function getLast_N_Temperature() {
     try {
         const response = await fetch(`${API_URL}/latestNtemperature?count=${N}`);
         const data = await response.json();
-        updateChartAndStats(data.temperatures);
+        console.log(data);
+        updateChartAndStats(data);
     } catch (error) {
         console.error("Error fetching data:", error);
         return [];
@@ -30,18 +50,19 @@ async function getLast_N_Temperature() {
 }
 
 // Funzione per cambiare modalità
-document.getElementById("modeBtn").addEventListener("click", async () => {
-    let text = document.getElementById("modeBtn").textContent;
-    let m;
-    if (text == "Attiva modalità MANUALE") {
-        m = "MANUAL"
-        document.getElementById("modeBtn").textContent = "Attiva modalità AUTOMATICA";
-        document.getElementById("windowSlider").style.display = "inline";
-    } else if (text == "Attiva modalità AUTOMATICA") {
-        m = "AUTOMATIC"
-        document.getElementById("modeBtn").textContent = "Attiva modalità MANUALE";
-        document.getElementById("windowSlider").style.display = "none";
-    }
+document.getElementById("autoBtn").addEventListener("click", async () => {
+    const m = "AUTOMATIC";
+    await fetch(`${API_URL}/mode`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mode: m })
+      });
+});
+
+document.getElementById("manualBtn").addEventListener("click", async () => {
+    const m = "MANUAL";
     await fetch(`${API_URL}/mode`, {
         method: "POST",
         headers: {
@@ -70,50 +91,63 @@ document.getElementById("resetAlarmBtn").addEventListener("click", async () => {
     alert("Allarme resettato");
 });
 
+document.getElementById("chartSlider").addEventListener("input", (event) => {N = parseInt(event.target.value)});
 
-function updateChartAndStats(latestData) {
-    if (latestData.length > 0) {
-        // Update the chart data
-        temperatureChart.data.labels = Array.from({ length: N }, (_, i) => `Measurement ${i + 1}`);
-        temperatureChart.data.datasets[0].data = latestData;
+function updateChartAndStats(data) {
+    if (data.temperatures.length > 0) {
+        // Converti i timestamp in un formato leggibile
+        const labels = data.timestamps.map(ts => {
+            const date = new Date(ts);
+            return date.toLocaleTimeString(); // Formato leggibile HH:MM:SS
+        }).reverse(); // Più recente a destra
 
-        // Update stats
-        const avgTemp = (latestData.reduce((acc, value) => acc + value, 0) / latestData.length).toFixed(2);
-        const maxTemp = Math.max(...latestData);
-        const minTemp = Math.min(...latestData);
+        // Estrarre le temperature
+        const temperatures = data.temperatures.reverse();
+
+        // Aggiorna il grafico
+        temperatureChart.data.labels = labels;
+        temperatureChart.data.datasets[0].data = temperatures;
+
+        // Calcola statistiche
+        const avgTemp = (temperatures.reduce((acc, value) => acc + value, 0) / temperatures.length).toFixed(2);
+        const maxTemp = Math.max(...temperatures);
+        const minTemp = Math.min(...temperatures);
 
         document.getElementById("avg-temp").textContent = avgTemp;
         document.getElementById("max-temp").textContent = maxTemp;
         document.getElementById("min-temp").textContent = minTemp;
 
-        // Update the chart
+        // Aggiorna il grafico
         temperatureChart.update();
     }
 }
+
 
 // Chart.js configuration
 const ctx = document.getElementById('temperatureChart').getContext('2d');
 const temperatureChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [],  // Empty labels initially
+        labels: [],  // Etichette inizialmente vuote
         datasets: [{
             label: 'Temperature (°C)',
-            data: [],  // Empty data initially
+            data: [],  // Dati inizialmente vuoti
             borderColor: 'rgb(75, 192, 192)',
             fill: false,
             tension: 0.1,
-            pointRadius: 5,
-            pointBackgroundColor: 'rgb(75, 192, 192)'
+            pointRadius: 2,  // Riduce la dimensione dei punti
+            pointBackgroundColor: 'rgb(75, 192, 192)',
+            pointHoverRadius: 2  // Evita l'ingrandimento al passaggio del mouse
         }]
     },
     options: {
         responsive: true,
+        animation: false,  // Disabilita le animazioni
         scales: {
             x: {
                 title: {
                     display: true,
-                    text: 'Measurements'
+                    text: 'Orario'
                 },
                 ticks: {
                     beginAtZero: true
@@ -133,7 +167,7 @@ const temperatureChart = new Chart(ctx, {
     }
 });
 
-document.getElementById("windowSlider").style.display = "none";
+
 setInterval(getLastData, 1000);
 setInterval(getLast_N_Temperature, 1000);
 getLastData();

@@ -30,7 +30,7 @@ public class HttpServer extends VerticleService {
         router.get("/latestNtemperature").handler(this::getLatestNtemperature);
         router.post("/mode").handler(this::handleSetMode);
         router.post("/window").handler(this::handleWindowPosition);
-        router.post("/reset-alarm").handler(this::handleResetAlarm);
+        router.get("/reset-alarm").handler(this::handleResetAlarm);
 
         // Avvio del server HTTP
         vertx.createHttpServer()
@@ -77,12 +77,6 @@ public class HttpServer extends VerticleService {
     }
 
     private void handleResetAlarm(RoutingContext context) {
-        /*
-         * DataStore.resetAlarm();
-         * 
-         * context.response()
-         * .setStatusCode(200)
-         * .end(new JsonObject().put("message", "Allarme resettato").encode());
-         */
+        controlUnit.resetAlarm();
     }
 }

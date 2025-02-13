@@ -12,7 +12,8 @@ public class ControlUnit {
     private State state;
     private Mode mode;
     private Boolean isStateChanged;
-    private Observer observer;
+    private Observer msgObserver;
+    private Observer timerObserver;
 
     public ControlUnit(DataStore dataStore) {
         this.dataStore = dataStore;
@@ -20,7 +21,8 @@ public class ControlUnit {
         this.mode = Mode.AUTOMATIC;
         this.isStateChanged = false;
         this.windowPosition = 0;
-        this.observer = (msg -> {}) ;
+        this.msgObserver = (msg -> {}) ;
+        this.timerObserver = (event -> {}) ;
     }
 
     public void setMode(String newMode, Boolean notifyMode) {
@@ -31,9 +33,8 @@ public class ControlUnit {
             updateWindowPosition(dataStore.getTemperature());
         }
         if (notifyMode) {
-            observer.notifyEvent("mode_" + mode.toString());
+            msgObserver.notifyEvent("mode_" + mode.toString());
         }
-        System.out.println("Modalità cambiata a: " + mode);
     }
 
     public void setWindowPositionManually(int position, Boolean notifyWindow) {
@@ -46,7 +47,7 @@ public class ControlUnit {
         if (newPos != this.windowPosition) {
             this.windowPosition = newPos;
             if (notifyWindow) {
-                observer.notifyEvent("position_" + String.valueOf(newPos));
+                msgObserver.notifyEvent("position_" + String.valueOf(newPos));
             }
         }
     }
@@ -73,22 +74,44 @@ public class ControlUnit {
 
     public void saveTemperature(double newTemp) {
         double oldTemp = dataStore.getTemperature();
-        dataStore.saveTemperatureData(newTemp);
+        dataStore.saveTemperatureData(newTemp, mode.toString());
 
         if (oldTemp != newTemp) {
             updateState(newTemp);
             updateWindowPosition(newTemp);
-            observer.notifyEvent("temperature_"+String.valueOf(newTemp));
+            msgObserver.notifyEvent("temperature_"+String.valueOf(newTemp));
         }
     }
 
     public void addSerialMsgObserver(Observer ob) {
-        this.observer = ob;
+        this.msgObserver = ob;
+    }
+
+    public void addTimerObserver(Observer ob) {
+        this.timerObserver = ob;
+    }
+
+    public void notifyTimer() {
+        if (state == State.TOO_HOT) {
+            setState(State.ALARM);
+        }
+    }
+
+    public void resetAlarm() {
+        setState(State.NORMAL);
     }
 
     private void updateState(double temp) {
-        State newState = State.getState(temp);
+        if (state != State.ALARM) {
+            setState(State.getState(temp));
+        }
+    }
+
+    private void setState(State newState) {
         isStateChanged = newState != state;
+        if (isStateChanged && newState == State.TOO_HOT) {
+            timerObserver.notifyEvent(null);
+        }
         state = newState;
     }
 
@@ -110,4 +133,6 @@ public class ControlUnit {
     private static int posPercent(double temp) {
         return (int) ((temp - State.NORMAL.getLimit())*100 / (State.HOT.getLimit() - State.NORMAL.getLimit()));
     }
+
+
 }

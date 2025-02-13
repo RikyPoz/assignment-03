@@ -24,28 +24,17 @@ void TaskSending::tick()
         {
             if (window->didModeChanged()) {
                 state = SENDING_MODE;
+                MsgService.sendMsg("trasmetto mode");
             } else if (window->didWindowLevelChanged() && !window->isAuto()) {
                 state = SENDING_POS;
+                MsgService.sendMsg("trasmetto pos");
             }
             break;
         }
         case SENDING_MODE:
         {
             String modality;
-            Window::Mode mode = window->getMode();
-
-            if (mode == Window::AUTOMATIC)
-            {
-                modality = "AUTOMATIC";
-            }
-            else if (mode == Window::MANUAL)
-            {
-                modality = "MANUAL";
-            }
-            else
-            {
-                modality = "prova";
-            }
+            modality = window->isAuto() ? "AUTOMATIC" : "MANUAL";
             MsgService.sendMsg("mode_"+modality);
             window->notifySending(SENDED_MODE);
             resetTimer();

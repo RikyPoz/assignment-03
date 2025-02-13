@@ -13,7 +13,7 @@ public class Main extends AbstractVerticle {
 
         DataStore dataStore = new DataStore();
         ControlUnit controlUnit = new ControlUnit(dataStore);
-        VerticleService[] verticles = {new HttpServer(controlUnit), new MQTTAgent(controlUnit), new SerialService(controlUnit)};
+        VerticleService[] verticles = {new HttpServer(controlUnit), new MQTTAgent(controlUnit), new SerialService(controlUnit), new TimerService(controlUnit)};
 
         Arrays.stream(verticles).forEach(v -> vertx.deployVerticle(v));
 

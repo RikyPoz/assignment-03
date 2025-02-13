@@ -50,7 +50,6 @@ void WindowControlTask::tick()
             else if (window->didDashboardValueChanged())
             {
                 window->moveWindow(dashboardValue);
-                // dashboardValueChanged = false qui o in moveWindow per entrambi?
             }
         }
         else

@@ -19,8 +19,8 @@ public:
     Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMotorImpl *servo);
 
     // Metodi di gestione dello stato
-    Mode getMode();
     bool isAuto();
+    bool isManual();
 
     // Interrogazioni sensori
     bool readButton();
@@ -42,6 +42,8 @@ public:
     // Eventi per cambiare stato
     void notifyAutomatic();
     void notifyManual();
+    void notifyAlarm();
+    void notifyAlarmResetted();
 
 private:
     void changeMode(Mode newMode);
@@ -57,6 +59,7 @@ private:
     bool dashboardValueChanged;
     bool windowLevelChanged;
     bool modeChanged;
+    bool alarm;
 };
 
 #endif

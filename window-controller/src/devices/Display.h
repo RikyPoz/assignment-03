@@ -15,9 +15,9 @@ public:
 
     // Displayable messages
     void defaultMessage();
-    void updateMode(String mode);
-    void updateLevel(String windowLevel);
-    void updateTemperature(String temp);
+    void updateMode(char mode[10]);
+    void updateLevel(char windowLevel[4]);
+    void updateTemperature(char temp[5]);
 
 private:
     LiquidCrystal_I2C *lcd;

@@ -35,14 +35,15 @@ void Display::defaultMessage()
     lcd->print("0");
 }
 
-void Display::updateMode(String mode)
+void Display::updateMode(char* mode)
 {
-    lcd->setCursor(2, 0);
-    lcd->print("MODE: ");
+    lcd->setCursor(8,0);
+    lcd->print("         ");
+    lcd->setCursor(8,0);
     lcd->print(mode);
 }
 
-void Display::updateTemperature(String temp)
+void Display::updateTemperature(char* temp)
 {
     lcd->setCursor(2, 1);
     lcd->print("Temp (C): ");
@@ -50,7 +51,7 @@ void Display::updateTemperature(String temp)
     lcd->print("  ");
 }
 
-void Display::updateLevel(String windowLevel)
+void Display::updateLevel(char* windowLevel)
 {
     lcd->setCursor(2, 2);
     lcd->print("Window (%): ");

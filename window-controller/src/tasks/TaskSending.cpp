@@ -24,10 +24,8 @@ void TaskSending::tick()
         {
             if (window->didModeChanged()) {
                 state = SENDING_MODE;
-                MsgService.sendMsg("trasmetto mode");
-            } else if (window->didWindowLevelChanged() && !window->isAuto()) {
+            } else if (window->didWindowLevelChanged() && window->isManual()) {
                 state = SENDING_POS;
-                MsgService.sendMsg("trasmetto pos");
             }
             break;
         }

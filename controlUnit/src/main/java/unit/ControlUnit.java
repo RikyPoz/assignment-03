@@ -61,7 +61,9 @@ public class ControlUnit {
     }
 
     public boolean isStateChanged() {
-        return isStateChanged;
+        final boolean temp = isStateChanged;
+        isStateChanged = false;
+        return temp;
     }
 
     public int getEspPeriod() {
@@ -93,6 +95,7 @@ public class ControlUnit {
 
     public void notifyTimer() {
         if (state == State.TOO_HOT) {
+            System.out.println("ALARM");
             setState(State.ALARM);
         }
     }
@@ -122,7 +125,7 @@ public class ControlUnit {
                     break;
                 case TOO_HOT: setWindowPosition(100, true);
                     break;
-                case HOT: setWindowPosition(posPercent(temp), true);
+                case HOT: setWindowPosition(50, true);
                     break;
                 case ALARM :
                     break;

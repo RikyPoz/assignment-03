@@ -95,20 +95,16 @@ document.getElementById("chartSlider").addEventListener("input", (event) => {N =
 
 function updateChartAndStats(data) {
     if (data.temperatures.length > 0) {
-        // Converti i timestamp in un formato leggibile
         const labels = data.timestamps.map(ts => {
             const date = new Date(ts);
-            return date.toLocaleTimeString(); // Formato leggibile HH:MM:SS
-        }).reverse(); // Più recente a destra
+            return date.toLocaleTimeString(); // Formato HH:MM:SS
+        }).reverse();
 
-        // Estrarre le temperature
         const temperatures = data.temperatures.reverse();
 
-        // Aggiorna il grafico
         temperatureChart.data.labels = labels;
         temperatureChart.data.datasets[0].data = temperatures;
 
-        // Calcola statistiche
         const avgTemp = (temperatures.reduce((acc, value) => acc + value, 0) / temperatures.length).toFixed(2);
         const maxTemp = Math.max(...temperatures);
         const minTemp = Math.min(...temperatures);
@@ -117,32 +113,30 @@ function updateChartAndStats(data) {
         document.getElementById("max-temp").textContent = maxTemp;
         document.getElementById("min-temp").textContent = minTemp;
 
-        // Aggiorna il grafico
         temperatureChart.update();
     }
 }
 
 
-// Chart.js configuration
 const ctx = document.getElementById('temperatureChart').getContext('2d');
 const temperatureChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [],  // Etichette inizialmente vuote
+        labels: [],
         datasets: [{
             label: 'Temperature (°C)',
-            data: [],  // Dati inizialmente vuoti
+            data: [],
             borderColor: 'rgb(75, 192, 192)',
             fill: false,
             tension: 0.1,
-            pointRadius: 2,  // Riduce la dimensione dei punti
+            pointRadius: 2,
             pointBackgroundColor: 'rgb(75, 192, 192)',
-            pointHoverRadius: 2  // Evita l'ingrandimento al passaggio del mouse
+            pointHoverRadius: 2
         }]
     },
     options: {
         responsive: true,
-        animation: false,  // Disabilita le animazioni
+        animation: false,
         scales: {
             x: {
                 title: {

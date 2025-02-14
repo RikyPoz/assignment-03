@@ -15,8 +15,7 @@ private:
     Window *window;
     enum State
     {
-        AUTOMATIC,
-        MANUAL,
+        MONITORING,
         WAIT
     } state;
 

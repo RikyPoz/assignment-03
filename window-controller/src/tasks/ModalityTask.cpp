@@ -12,51 +12,28 @@ ModalityTask::ModalityTask(Window *window)
 void ModalityTask::init(int period)
 {
     Task::init(period);
-    state = AUTOMATIC;
+    state = MONITORING;
 }
 
 void ModalityTask::tick()
 {
     switch (state)
     {
-    case AUTOMATIC:
-        if (window->isAuto())
-        {
-            if (window->readButton())
-            {
-                state = WAIT;
-                precState = AUTOMATIC;
+    case MONITORING:
+        if (window->readButton()) {
+            if (window->isAuto()) {
                 window->notifyManual();
-                resetTimer();
-            }
-        }
-        else
-        {
-            state = MANUAL;
-        }
-        break;
-
-    case MANUAL:
-        if (!window->isAuto())
-        {
-            if (window->readButton())
-            {
-                state = WAIT;
-                precState = MANUAL;
+            } else if (window->isManual()) {
                 window->notifyAutomatic();
-                resetTimer();
             }
-        }
-        else
-        {
-            state = AUTOMATIC;
+            state = WAIT;
+            resetTimer();
         }
         break;
     case WAIT:
     {
-        if (getElapsedTime() > BOUNCING_TIME)
-        {
-            state = precState == AUTOMATIC ? MANUAL : AUTOMATIC;
+        if (getElapsedTime() > BOUNCING_TIME) {
+            state = MONITORING;
         }
         break;
     }

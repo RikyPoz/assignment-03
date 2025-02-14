@@ -33,7 +33,6 @@ public class MQTTAgent extends VerticleService {
                     if (json.containsKey("temperatura")) {
                         temperature = json.getInteger("temperatura");
                     }
-                    System.out.println("[MQTT] Temperatura ricevuta: " + temperature);
 
                     controlUnit.saveTemperature(temperature);
                 });

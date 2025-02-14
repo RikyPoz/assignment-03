@@ -39,6 +39,9 @@ Task *modalityTask;
 Task *windowControlTask;
 Task *sendingTask;
 
+
+long t = 0;
+
 void setup()
 {
     MsgService.init();

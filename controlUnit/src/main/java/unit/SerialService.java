@@ -14,13 +14,13 @@ public class SerialService extends VerticleService {
     @Override
     public void start(Promise<Void> startPromise) {
         try {
-            msgService = new MsgService("/dev/ttyACM1", controlUnit);
+            msgService = new MsgService("/dev/ttyACM0", controlUnit);
 
             // Lettura periodica dei dati
             vertx.setPeriodic(200, id -> msgService.read());
 
             // Invio periodico di comandi se ci sono messaggi in coda
-            vertx.setPeriodic(1000, id -> msgService.send());
+            vertx.setPeriodic(500, id -> msgService.send());
 
             startPromise.complete();
         } catch (Exception e) {

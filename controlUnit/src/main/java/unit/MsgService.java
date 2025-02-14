@@ -38,7 +38,6 @@ public class MsgService {
     public void send() {
         if (!msgToSend.isEmpty()) {
             final String msg = msgToSend.poll();
-            //System.out.println("Invio messaggio: "+msg);
             channel.sendMsg(msg);
         }
 

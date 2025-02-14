@@ -12,6 +12,11 @@ public:
     void tick();
 
 private:
+    enum ReceivingState
+    {
+        NORMAL,
+        ALARM
+    } state;
     Window *window;
 };
 

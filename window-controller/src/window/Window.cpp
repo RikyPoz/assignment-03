@@ -25,11 +25,7 @@ Window::Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMo
     dashboardValueChanged = false;
     windowLevelChanged = false;
     modeChanged = true;
-}
-
-Window::Mode Window::getMode()
-{
-    return mode;
+    alarm = false;
 }
 
 void Window::changeMode(Window::Mode newMode)
@@ -46,9 +42,19 @@ void Window::notifyAutomatic()
 
 void Window::notifyManual()
 {
-    display->updateMode("MANUAL   ");
+    display->updateMode("MANUAL");
     changeMode(MANUAL);
 }
+
+void Window::notifyAlarmResetted()
+{
+    alarm = false;
+}
+
+void Window::notifyAlarm() {
+    alarm = true;
+}
+
 
 bool Window::readButton()
 {
@@ -74,10 +80,11 @@ void Window::moveWindow(int pos)
 {
     servo->setPosition(pos);
     windowLevel = pos;
+    char windowBuffer[4];
     windowLevelChanged = true;
     dashboardValueChanged = false;
 
-    display->updateLevel(String(windowLevel));
+    display->updateLevel(itoa(windowLevel, windowBuffer, 10));
 }
 
 float Window::getTemp()
@@ -121,11 +128,15 @@ int Window::getDashboardValue()
 
 void Window::updateTemp(float temp)
 {
+    char charTemp[5];
     temperature = temp;
-    display->updateTemperature(String(temperature));
+    display->updateTemperature(dtostrf(temp, 3, 1, charTemp));
 }
 
-bool Window::isAuto()
-{
-    return mode == Window::AUTOMATIC;
+bool Window::isAuto() {
+    return mode == Window::AUTOMATIC && !alarm;
+}
+
+bool Window::isManual() {
+    return mode == Window::MANUAL && !alarm;
 }

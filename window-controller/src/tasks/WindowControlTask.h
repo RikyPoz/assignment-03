@@ -13,6 +13,8 @@ public:
 
 private:
     Window *window;
+    int oldPotValue;
+    int oldUnitValue;
     enum DetectionState
     {
         AUTOMATIC,

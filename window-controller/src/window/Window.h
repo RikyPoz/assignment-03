@@ -21,6 +21,8 @@ public:
     // Metodi di gestione dello stato
     bool isAuto();
     bool isManual();
+    bool isAlarm();
+
 
     // Interrogazioni sensori
     bool readButton();
@@ -28,16 +30,10 @@ public:
     void updateTemp(float temp);
     float getTemp();
 
-    bool didWindowLevelChanged();
-    bool didModeChanged();
-    void notifySending(int sended);
-
     int getWindowLevel();
     void updateDashboardValue(int value);
     int getDashboardValue();
-    void updatePotValue();
     int getPotValue();
-    bool didDashboardValueChanged();
 
     // Eventi per cambiare stato
     void notifyAutomatic();
@@ -57,7 +53,6 @@ private:
     int potValue;
     int dashboardValue;
     bool dashboardValueChanged;
-    bool windowLevelChanged;
     bool modeChanged;
     bool alarm;
 };

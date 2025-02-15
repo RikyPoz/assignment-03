@@ -97,11 +97,13 @@ public class ControlUnit {
         if (state == State.TOO_HOT) {
             System.out.println("ALARM");
             setState(State.ALARM);
+            msgObserver.notifyEvent("alarm_1");
         }
     }
 
     public void resetAlarm() {
         setState(State.NORMAL);
+        msgObserver.notifyEvent("alarm_0");
     }
 
     private void updateState(double temp) {
@@ -125,7 +127,7 @@ public class ControlUnit {
                     break;
                 case TOO_HOT: setWindowPosition(100, true);
                     break;
-                case HOT: setWindowPosition(50, true);
+                case HOT: setWindowPosition(posPercent(temp), true);
                     break;
                 case ALARM :
                     break;

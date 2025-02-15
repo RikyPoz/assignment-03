@@ -13,10 +13,10 @@ public:
 
 private:
     Window *window;
+    int oldPos;
+    bool IsOldModeManual;
     enum SendingState
     {
-        SENDING_POS,
-        SENDING_MODE,
         WAIT,
         TRASM_TIME
 

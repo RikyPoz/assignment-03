@@ -23,26 +23,29 @@ Window::Window(ButtonImpl *button, Display *display, Potentiometer *pot, ServoMo
     notifyAutomatic();
 
     dashboardValueChanged = false;
-    windowLevelChanged = false;
     modeChanged = true;
     alarm = false;
 }
 
 void Window::changeMode(Window::Mode newMode)
 {
-    modeChanged = mode != newMode;
-    mode = newMode;
+    if (mode != newMode) {
+        modeChanged = true;
+        mode = newMode;
+    }
 }
 
 void Window::notifyAutomatic()
 {
     display->updateMode("AUTOMATIC");
+    display->noTemperature();
     changeMode(AUTOMATIC);
 }
 
 void Window::notifyManual()
 {
     display->updateMode("MANUAL");
+    display->updateTemperature(temperature);
     changeMode(MANUAL);
 }
 
@@ -55,6 +58,10 @@ void Window::notifyAlarm() {
     alarm = true;
 }
 
+bool Window::isAlarm() {
+    return alarm;
+}
+
 
 bool Window::readButton()
 {
@@ -63,52 +70,21 @@ bool Window::readButton()
 
 int Window::getPotValue()
 {
-    return potValue;
-}
-
-bool Window::didDashboardValueChanged()
-{
-    return dashboardValueChanged;
-}
-
-void Window::updatePotValue()
-{
-    potValue = pot->detectValue();
+    return pot->detectValue();
 }
 
 void Window::moveWindow(int pos)
 {
     servo->setPosition(pos);
     windowLevel = pos;
-    char windowBuffer[4];
-    windowLevelChanged = true;
     dashboardValueChanged = false;
 
-    display->updateLevel(itoa(windowLevel, windowBuffer, 10));
+    display->updateLevel(pos);
 }
 
 float Window::getTemp()
 {
     return temperature;
-}
-
-bool Window::didWindowLevelChanged()
-{
-    return windowLevelChanged;
-}
-
-bool Window::didModeChanged()
-{
-    return modeChanged;
-}
-
-void Window::notifySending(int sended)
-{
-    if (sended == SENDED_MODE) {
-        modeChanged = false;
-    } else if (sended == SENDED_POS) {
-        windowLevelChanged = false;
-    }
 }
 
 int Window::getWindowLevel()
@@ -128,9 +104,10 @@ int Window::getDashboardValue()
 
 void Window::updateTemp(float temp)
 {
-    char charTemp[5];
+    if (temperature != temp && isManual()) {
+        display->updateTemperature(temp);
+    }
     temperature = temp;
-    display->updateTemperature(dtostrf(temp, 3, 1, charTemp));
 }
 
 bool Window::isAuto() {

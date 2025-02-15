@@ -4,8 +4,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.LinkedList;
-import java.util.List;
-
 public class DataStore {
 
     private final LinkedList<JsonObject> dataStore = new LinkedList<>();

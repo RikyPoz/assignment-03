@@ -8,6 +8,8 @@
 TaskSending::TaskSending(Window *window)
 {
     this->window = window;
+    oldPos = -1;
+    IsOldModeManual;
 }
 
 void TaskSending::init(int period)
@@ -22,30 +24,20 @@ void TaskSending::tick()
     {
         case WAIT:
         {
-            if (window->didModeChanged()) {
-                state = SENDING_MODE;
-            } else if (window->didWindowLevelChanged() && window->isManual()) {
-                state = SENDING_POS;
+            int newPos = window->getWindowLevel();
+            bool IsNewModeManual = window->isManual();
+            bool isModeChanged = IsOldModeManual != IsNewModeManual;
+            if (isModeChanged && !window->isAlarm()) {
+                String mode = IsNewModeManual ? "MANUAL" : "AUTOMATIC";
+                MsgService.sendMsg("mode_"+mode);
+                IsOldModeManual = IsNewModeManual;
+                state = TRASM_TIME;
+            } else if (newPos != oldPos && IsNewModeManual) {
+                MsgService.sendMsg("position_"+String(newPos));
+                oldPos = newPos;
+                state = TRASM_TIME;
             }
-            break;
-        }
-        case SENDING_MODE:
-        {
-            String modality;
-            modality = window->isAuto() ? "AUTOMATIC" : "MANUAL";
-            MsgService.sendMsg("mode_"+modality);
-            window->notifySending(SENDED_MODE);
             resetTimer();
-            state = TRASM_TIME;
-            break;
-        }
-        case SENDING_POS:
-        {
-            int pos = window->getWindowLevel();
-            MsgService.sendMsg("position_"+String(pos));
-            window->notifySending(SENDED_POS);
-            resetTimer();
-            state = TRASM_TIME;
             break;
         }
         case TRASM_TIME:

@@ -12,7 +12,7 @@
 // wifi network info
 
 const char *ssid = "Home&Life SuperWiFi-42A5";
-const char *password = "GKK3PJNLHJ8FHHFX";
+const char *password = "******";
 
 // MQTT server address 
 const char *mqtt_server = "broker.mqtt-dashboard.com";
@@ -47,8 +47,6 @@ void callback(char *topic, byte *payload, unsigned int length) {
   if (((String) topic).equals(topic2) && doc.containsKey("period")) {
     long period_ms = doc["period"];
     sendPeriod = pdMS_TO_TICKS(period_ms);
-    Serial.print("sendPeriod aggiornato a: ");
-    Serial.print(period_ms);
   }
 }
 
@@ -78,10 +76,7 @@ void sendTaskcode(void *parameter)
       break;
       case SEND :
         if (wifiConn && mqttConn) {
-          Serial.print("Periodo: ");
-          Serial.println(sendPeriod);
           snprintf(msg, MSG_BUFFER_SIZE, "{\"temperatura\":%d}", temperature);
-          Serial.println(String("Publishing message: ") + msg);
           client.publish(topic1, msg);
           timeElapsed = 0;
           state = WAIT;
@@ -122,14 +117,10 @@ void mqttTaskcode(void *parameter) {
       String clientId = String("temp-client") + String(random(0xffff), HEX);
       // Attempt to connect
       if (client.connect(clientId.c_str())) {
-        Serial.println("connected");
         client.subscribe(topic1);
         client.subscribe(topic2);
         mqttConn = true;
       } else {
-        Serial.print("failed, rc=");
-        Serial.print(client.state());
-        Serial.println(" try again in 5 seconds");
         xTaskDelayUntil(&xLastWakeTime, RETRY_PERIOD);
       }
     }

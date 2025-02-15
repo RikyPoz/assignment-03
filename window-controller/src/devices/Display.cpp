@@ -43,18 +43,25 @@ void Display::updateMode(char* mode)
     lcd->print(mode);
 }
 
-void Display::updateTemperature(char* temp)
+void Display::updateTemperature(float temp)
 {
+    char charTemp[5];
     lcd->setCursor(2, 1);
     lcd->print("Temp (C): ");
-    lcd->print(temp);
+    lcd->print(dtostrf(temp, 3, 1, charTemp));
     lcd->print("  ");
 }
 
-void Display::updateLevel(char* windowLevel)
+void Display::updateLevel(int windowLevel)
 {
+    char windowBuffer[4];
     lcd->setCursor(2, 2);
     lcd->print("Window (%): ");
-    lcd->print(windowLevel);
+    lcd->print(itoa(windowLevel, windowBuffer, 10));
     lcd->print("  ");
+}
+
+void Display::noTemperature() {
+    lcd->setCursor(2,1);
+    lcd->print("               ");
 }

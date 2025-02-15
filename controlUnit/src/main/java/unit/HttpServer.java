@@ -63,13 +63,13 @@ public class HttpServer extends VerticleService {
     }
 
     private void handleSetMode(RoutingContext context) {
-        JsonObject body = context.getBodyAsJson();
+        JsonObject body = context.body().asJsonObject();
         controlUnit.setMode(body.getString("mode"),true);
         context.response().end(new JsonObject().put("status", "Mode changed").encode());
     }
 
     private void handleWindowPosition(RoutingContext context) {
-        JsonObject body = context.getBodyAsJson();
+        JsonObject body = context.body().asJsonObject();;
         int position = body.getInteger("position");
 
         controlUnit.setWindowPositionManually(position, true);

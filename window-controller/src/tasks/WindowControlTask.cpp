@@ -6,12 +6,15 @@
 WindowControlTask::WindowControlTask(Window *window)
 {
     this->window = window;
+    oldUnitValue = -1;
+    oldPotValue = -1;
 }
 
 void WindowControlTask::init(int period)
 {
     Task::init(period);
     state = AUTOMATIC;
+    
 }
 
 void WindowControlTask::tick()
@@ -20,10 +23,10 @@ void WindowControlTask::tick()
     {
     case AUTOMATIC:
         if (window->isAuto()) {
-            int dashboardPos = window->getDashboardValue();
-            if (window->didDashboardValueChanged())
-            {
-                window->moveWindow(dashboardPos);
+            int newUnitValue = window->getDashboardValue();
+            if (newUnitValue != oldUnitValue) {
+                window->moveWindow(newUnitValue);
+                oldUnitValue = newUnitValue;
             }
         } else {
             state = MANUAL;
@@ -33,20 +36,16 @@ void WindowControlTask::tick()
 
     case MANUAL:
         if (window->isManual()) {
-            int dashboardValue = window->getDashboardValue();
-
-            int potValue = window->getPotValue();
-            window->updatePotValue();
+            int newUnitValue = window->getDashboardValue();
             int newPotValue = window->getPotValue();
 
-            if (abs(potValue - newPotValue) > TOLERANCE)
-            {
+            if (abs(oldPotValue - newPotValue) > TOLERANCE) {
                 window->moveWindow(newPotValue);
+            } else if (oldUnitValue != newUnitValue) {
+                window->moveWindow(newUnitValue);
             }
-            else if (window->didDashboardValueChanged())
-            {
-                window->moveWindow(dashboardValue);
-            }
+            oldPotValue = newPotValue;
+            oldUnitValue = newUnitValue;
         } else {
             state = AUTOMATIC;
         }
